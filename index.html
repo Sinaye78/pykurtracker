@@ -1,0 +1,4343 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pykur Tracker</title>
+<link rel="icon" type="image/png" href="./images/logo.png">
+
+<style>
+:root{
+  --bg:#1f140c;
+  --panel:#ead6b3;
+  --panel-2:#f6e8cc;
+  --text:#2b1609;
+  --muted:#6b4f2a;
+  --border:#a88f6c;
+  --shadow:0 14px 35px rgba(0,0,0,.35);
+  --green:#16a34a;
+  --blue:#2563eb;
+  --orange:#d97706;
+  --red:#b91c1c;
+  --gray:#4b5563;
+  --radius:16px;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:Arial, "Trebuchet MS", sans-serif;
+  color:var(--text);
+  background:
+    linear-gradient(rgba(0,0,0,.46),rgba(0,0,0,.46)),
+    url("./images/fond.png") center/cover fixed no-repeat;
+}
+
+body.night{
+  --panel:#2b1f14;
+  --panel-2:#382817;
+  --text:#f4e7c5;
+  --muted:#d6c09a;
+  --border:#8b6f47;
+  background:
+    linear-gradient(rgba(0,0,0,.78),rgba(0,0,0,.78)),
+    url("./images/fond.png") center/cover fixed no-repeat;
+}
+
+body.no-anim *{animation:none!important;transition:none!important}
+body.no-tooltips .tooltip::after{display:none!important}
+
+.app{
+  width:min(980px,94vw);
+  margin:12px auto 72px;
+  padding:14px;
+  background:rgba(234,214,179,.96);
+  border:2px solid var(--border);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+}
+
+body.night .app{background:rgba(43,31,20,.96)}
+
+.layout{
+  display:grid;
+  grid-template-columns:230px 1fr;
+  gap:14px;
+  align-items:start;
+}
+
+.card{
+  background:rgba(255,255,255,.16);
+  border:2px solid var(--border);
+  border-radius:var(--radius);
+  padding:12px;
+}
+
+.side{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  text-align:center;
+}
+
+.pykur-img{
+  width:170px;
+  max-width:100%;
+  margin:0 auto;
+  display:block;
+  transition:.2s;
+}
+
+.pykur-img.pop{animation:pop .28s ease}
+@keyframes pop{50%{transform:scale(1.1) translateY(-4px)}}
+
+.progress-title{
+  font-size:17px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+
+.progress-bar{
+  height:22px;
+  border-radius:999px;
+  overflow:hidden;
+  background:#4d4638;
+  border:2px solid #3a3429;
+}
+
+.progress-fill{
+  height:100%;
+  width:0;
+  background:linear-gradient(90deg,#22c55e,#84cc16);
+  transition:.25s;
+}
+
+.progress-percent{
+  margin-top:6px;
+  font-size:25px;
+  font-weight:900;
+}
+
+.chrono-title{
+  font-size:17px;
+  font-weight:900;
+}
+
+.chrono-time{
+  margin:8px 0;
+  font-size:28px;
+  font-weight:900;
+  color:var(--blue);
+}
+
+.chrono-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.main{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.profile-row{
+  display:grid;
+  grid-template-columns:auto 1fr auto auto auto;
+  gap:8px;
+  align-items:center;
+}
+
+.profile-row label{
+  font-weight:900;
+  color:var(--muted);
+}
+
+select,input{
+  min-height:38px;
+  border:2px solid var(--border);
+  border-radius:12px;
+  padding:0 10px;
+  font-weight:800;
+  background:#fff7e6;
+  color:#2b1609;
+}
+
+.hero{
+  text-align:center;
+}
+
+.title-row{
+  display:grid;
+  grid-template-columns:72px 1fr 72px;
+  align-items:center;
+  gap:10px;
+}
+
+h1{
+  margin:0;
+  font-size:42px;
+  line-height:1;
+}
+
+.farm-row{
+  margin-top:10px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  font-weight:900;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  margin-top:10px;
+}
+
+.btn{
+  min-height:40px;
+  border:1px solid rgba(255,255,255,.28);
+  border-bottom:3px solid rgba(0,0,0,.36);
+  border-radius:13px;
+  padding:0 12px;
+  color:#fff;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:900;
+  text-align:center;
+  line-height:1.12;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  white-space:normal;
+  text-shadow:0 1px 1px rgba(0,0,0,.32);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 5px 12px rgba(0,0,0,.18);
+}
+
+.btn:hover{filter:brightness(1.06);transform:translateY(-1px)}
+.btn:active{transform:translateY(1px);border-bottom-width:1px}
+
+.btn-green{background:linear-gradient(#22c55e,#15803d)}
+.btn-blue{background:linear-gradient(#60a5fa,#2563eb)}
+.btn-orange{background:linear-gradient(#f59e0b,#b45309)}
+.btn-red{background:linear-gradient(#dc2626,#7f1d1d)}
+.btn-gray{background:linear-gradient(#6b7280,#374151)}
+
+.big-btn{
+  width:72px;
+  height:58px;
+  min-height:58px;
+  padding:0;
+  font-size:34px;
+  border-radius:18px;
+  white-space:nowrap;
+}
+
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:8px;
+}
+
+.stat-box{
+  text-align:center;
+  padding:10px;
+}
+
+.stat-title{
+  font-size:13px;
+  font-weight:900;
+  color:var(--muted);
+}
+
+.stat-value{
+  margin-top:4px;
+  font-size:24px;
+  font-weight:900;
+}
+
+.green-text{color:var(--green)}
+.red-text{color:var(--red)}
+.blue-text{color:var(--blue)}
+
+.pp-row{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  font-size:20px;
+  font-weight:900;
+}
+
+.pp-row img{width:36px}
+
+.info{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+  line-height:1.45;
+  color:var(--muted);
+  font-weight:800;
+}
+
+/* Tooltips */
+.tooltip{position:relative}
+.tooltip::after{
+  content:attr(data-tooltip);
+  position:absolute;
+  left:50%;
+  bottom:calc(100% + 8px);
+  transform:translateX(-50%);
+  width:max-content;
+  max-width:240px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:rgba(35,24,16,.98);
+  color:#fff4d6;
+  font-size:12px;
+  line-height:1.25;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  z-index:20000;
+  box-shadow:0 8px 18px rgba(0,0,0,.35);
+}
+.tooltip:hover::after{opacity:1;visibility:visible}
+
+/* Floating monster button */
+#monsterLauncher{
+  position:fixed;
+  left:50%;
+  bottom:14px;
+  transform:translateX(-50%);
+  z-index:9000;
+  min-width:190px;
+  height:46px;
+  border-radius:999px;
+  font-size:16px;
+}
+
+/* Modal system */
+.modal-bg{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,.58);
+  backdrop-filter:blur(3px);
+  z-index:10000;
+}
+
+.modal-bg.show{display:flex}
+
+.modal{
+  width:min(780px,94vw);
+  max-height:88vh;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  background:var(--panel);
+  border:3px solid var(--border);
+  border-radius:18px;
+  box-shadow:0 18px 45px rgba(0,0,0,.52);
+  overflow:hidden;
+}
+
+.modal-head{
+  min-height:56px;
+  padding:0 16px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  background:linear-gradient(#6b4423,#3b2414);
+  color:#fff4d6;
+}
+
+.modal-head h2{
+  margin:0;
+  font-size:23px;
+  color:#fff4d6;
+}
+
+.modal-close{
+  width:38px;
+  height:38px;
+  min-height:38px;
+  padding:0;
+  border-radius:10px;
+  font-size:19px;
+}
+
+.modal-body{
+  padding:14px;
+  overflow:auto;
+}
+
+.modal-foot{
+  min-height:56px;
+  padding:10px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  border-top:1px solid rgba(139,111,71,.35);
+  background:rgba(255,247,230,.35);
+}
+
+body.night .modal-foot{background:rgba(255,255,255,.04)}
+
+.option-grid,
+.stats-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.option-card,
+.stats-card{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border:2px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,.12);
+  font-weight:900;
+}
+
+.option-card small{
+  display:block;
+  margin-top:3px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.activity-list{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.activity-item{
+  display:grid;
+  grid-template-columns:62px 1fr;
+  gap:10px;
+  padding:9px 10px;
+  border-radius:12px;
+  background:rgba(255,255,255,.14);
+  border-left:4px solid var(--blue);
+  font-size:13px;
+  font-weight:900;
+}
+
+.activity-item.success{border-left-color:var(--green)}
+.activity-item.warning{border-left-color:var(--orange)}
+.activity-item.error{border-left-color:var(--red)}
+.activity-time{opacity:.7;font-size:12px}
+
+/* Monster modal */
+.monster-modal{
+  width:min(960px,94vw);
+  max-height:88vh;
+}
+
+.monster-tabs{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr)) auto;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.monster-tabs .btn{
+  height:38px;
+  min-height:38px;
+  font-size:13px;
+  padding:0 9px;
+}
+
+.monster-tabs .active{
+  outline:3px solid rgba(250,204,21,.55);
+  filter:brightness(1.12);
+}
+
+.monster-table{
+  border:2px solid var(--border);
+  border-radius:14px;
+  overflow:auto;
+  max-height:58vh;
+  background:rgba(255,255,255,.12);
+}
+
+.monster-row{
+  display:grid;
+  grid-template-columns:54px minmax(180px,1fr) 110px;
+  gap:10px;
+  align-items:center;
+  min-height:56px;
+  padding:8px 12px;
+  border-bottom:1px solid rgba(139,111,71,.35);
+  font-weight:900;
+}
+
+.monster-row.all{
+  grid-template-columns:54px minmax(170px,1fr) repeat(4,90px);
+}
+
+.monster-row.header{
+  position:sticky;
+  top:0;
+  z-index:2;
+  min-height:44px;
+  background:rgba(207,177,130,.96);
+  color:#5a3415;
+  font-size:12px;
+  text-transform:uppercase;
+}
+
+body.night .monster-row.header{
+  background:rgba(255,255,255,.10);
+  color:#facc15;
+}
+
+.monster-row:nth-child(even):not(.header){background:rgba(255,255,255,.13)}
+.monster-icon{width:42px;max-height:48px;object-fit:contain}
+.monster-value{text-align:center;color:#7b430d}
+body.night .monster-value{color:#facc15}
+
+.mob-edit-grid{
+  display:grid;
+  grid-template-columns:54px 1fr repeat(3,90px);
+  gap:8px;
+  align-items:center;
+}
+
+.mob-edit-grid.header{
+  font-weight:900;
+  color:var(--muted);
+  margin-bottom:8px;
+}
+
+.mob-edit-card{
+  display:grid;
+  grid-template-columns:54px 1fr repeat(3,90px);
+  gap:8px;
+  align-items:center;
+  padding:8px;
+  border-bottom:1px solid rgba(139,111,71,.25);
+  font-weight:900;
+}
+
+.mob-edit-card img{width:42px;max-height:48px;object-fit:contain}
+.mob-edit-card input{text-align:center;width:100%}
+
+.toast-wrap{
+  position:fixed;
+  right:12px;
+  bottom:72px;
+  z-index:20000;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  pointer-events:none;
+}
+
+.toast{
+  max-width:280px;
+  padding:10px 12px;
+  border-radius:12px;
+  color:white;
+  font-size:13px;
+  font-weight:900;
+  box-shadow:0 8px 18px rgba(0,0,0,.35);
+  animation:toastIn .18s ease;
+}
+.toast.success{background:linear-gradient(#16a34a,#22c55e)}
+.toast.info{background:linear-gradient(#2563eb,#60a5fa)}
+.toast.warning{background:linear-gradient(#b45309,#f59e0b)}
+.toast.error{background:linear-gradient(#991b1b,#ef4444)}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:768px){
+  body{background-attachment:scroll}
+  .app{
+    width:100%;
+    min-height:100vh;
+    margin:0 0 60px;
+    border-radius:0;
+    border:none;
+    padding:10px;
+  }
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .side{
+    display:grid;
+    grid-template-columns:120px 1fr;
+    text-align:left;
+    align-items:center;
+  }
+
+  .side .card{height:100%}
+  .pykur-img{width:110px}
+
+  .chrono-card{
+    grid-column:1 / -1;
+  }
+
+  .profile-row{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .profile-row label,
+  .profile-row select{
+    grid-column:1 / -1;
+  }
+
+  .title-row{
+    grid-template-columns:64px 1fr 64px;
+  }
+
+  h1{font-size:34px}
+  .big-btn{width:64px;height:54px;min-height:54px}
+
+  .actions{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .summary-grid{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .monster-tabs{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .monster-tabs button:last-child{
+    grid-column:1 / -1;
+  }
+
+  .monster-row.all{
+    grid-template-columns:46px 1fr;
+    gap:4px 10px;
+  }
+
+  .monster-row.all.header{display:none}
+
+  .monster-row.all img{
+    grid-row:1 / span 5;
+  }
+
+  .monster-row.all span{
+    grid-column:2;
+    text-align:left;
+  }
+
+  .monster-row.all span:nth-child(3)::before{content:"Morose : "}
+  .monster-row.all span:nth-child(4)::before{content:"Tynril : "}
+  .monster-row.all span:nth-child(5)::before{content:"Zone : "}
+  .monster-row.all span:nth-child(6)::before{content:"Total : "}
+
+  .monster-row{
+    grid-template-columns:46px 1fr 70px;
+  }
+
+  .mob-edit-grid.header{display:none}
+  .mob-edit-card{
+    grid-template-columns:44px 1fr;
+  }
+  .mob-edit-card input{
+    grid-column:1 / -1;
+  }
+
+  .tooltip::after{display:none}
+}
+
+/* ===== Ajouts refonte v2 : infobulles, cartes donjons, historique chrono, sauvegarde ===== */
+.dungeon-summary{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.dungeon-card{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  align-items:stretch;
+  padding:10px;
+}
+
+.dungeon-card h3{
+  grid-column:1 / -1;
+  margin:0 0 2px;
+  font-size:17px;
+  text-align:center;
+}
+
+.dungeon-mini{
+  border:1px solid rgba(139,111,71,.35);
+  border-radius:12px;
+  padding:9px;
+  text-align:center;
+  background:rgba(255,255,255,.13);
+}
+
+.dungeon-mini.full{
+  grid-column:1 / -1;
+  cursor:pointer;
+}
+
+.dungeon-mini:hover{
+  background:rgba(255,255,255,.22);
+}
+
+.dungeon-label{
+  font-size:12px;
+  font-weight:900;
+  color:var(--muted);
+}
+
+.dungeon-value{
+  margin-top:3px;
+  font-size:21px;
+  font-weight:900;
+}
+
+.chrono-history{
+  margin-top:10px;
+  border-top:1px solid rgba(139,111,71,.35);
+  padding-top:9px;
+}
+
+.chrono-history-title{
+  font-size:13px;
+  font-weight:900;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.chrono-history-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+}
+
+.chrono-history-box{
+  border:1px solid rgba(139,111,71,.35);
+  border-radius:12px;
+  padding:7px;
+  background:rgba(255,255,255,.12);
+  text-align:left;
+  max-height:106px;
+  overflow:auto;
+}
+
+.chrono-history-box strong{
+  display:block;
+  text-align:center;
+  margin-bottom:4px;
+  font-size:12px;
+}
+
+.chrono-mark{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  font-size:12px;
+  font-weight:900;
+  padding:3px 0;
+  border-bottom:1px solid rgba(139,111,71,.18);
+}
+
+.chrono-empty{
+  text-align:center;
+  opacity:.65;
+  font-size:12px;
+  font-weight:900;
+}
+
+.backup-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+#monsterLauncher{
+  position:static!important;
+  left:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  display:flex!important;
+  width:min(260px,92vw)!important;
+  margin:-52px auto 18px!important;
+  z-index:1!important;
+}
+
+.app{
+  margin-bottom:68px!important;
+}
+
+@media(max-width:768px){
+  .dungeon-summary{
+    grid-template-columns:1fr;
+  }
+
+  .chrono-history-grid{
+    grid-template-columns:1fr;
+  }
+
+  .backup-actions{
+    grid-template-columns:1fr;
+  }
+
+  #monsterLauncher{
+    margin:10px auto 70px!important;
+    width:calc(100vw - 24px)!important;
+  }
+
+  .app{
+    margin-bottom:0!important;
+  }
+}
+
+
+/* ===== Centrage global + bouton Monstres intégré ===== */
+html,
+body{
+  min-height:100%;
+}
+
+body{
+  min-height:100vh!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:14px!important;
+  overflow-x:hidden!important;
+}
+
+.app{
+  margin:0 auto!important;
+  width:min(980px,94vw)!important;
+}
+
+#monsterLauncher{
+  position:static!important;
+  left:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  z-index:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+.actions{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+
+@media(max-height:760px) and (min-width:769px){
+  body{
+    align-items:flex-start!important;
+    padding-top:10px!important;
+  }
+
+  .app{
+    transform:scale(.94);
+    transform-origin:top center;
+  }
+}
+
+@media(max-width:768px){
+  body{
+    display:block!important;
+    padding:0!important;
+  }
+
+  .app{
+    width:100%!important;
+    margin:0!important;
+  }
+
+  #monsterLauncher{
+    width:100%!important;
+    margin:0!important;
+  }
+}
+
+
+/* ===== Correctifs fenêtres + bouton monstres + tableau temps ===== */
+
+/* Centrage propre sans perdre les boutons */
+body{
+  min-height:100vh!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:12px!important;
+  overflow-x:hidden!important;
+}
+
+.app{
+  margin:0 auto!important;
+}
+
+/* Le bouton Monstres est dans la grille, pas flottant */
+#monsterLauncher{
+  position:static!important;
+  left:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  z-index:auto!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+.actions{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+
+/* Bouton tableau des temps */
+.chrono-history-open{
+  width:100%!important;
+  margin-top:8px!important;
+}
+
+/* Fenêtres : pas de scroll horizontal */
+.modal-bg{
+  padding:12px!important;
+  overflow:hidden!important;
+}
+
+.modal{
+  width:min(820px,calc(100vw - 24px))!important;
+  max-height:calc(100vh - 24px)!important;
+  overflow:hidden!important;
+}
+
+.modal-body{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:12px!important;
+}
+
+.modal *{
+  max-width:100%;
+}
+
+.monster-modal{
+  width:min(940px,calc(100vw - 24px))!important;
+}
+
+.monster-table{
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  max-height:calc(100vh - 210px)!important;
+}
+
+.monster-row.all{
+  grid-template-columns:46px minmax(130px,1fr) repeat(4,minmax(58px,78px))!important;
+}
+
+.monster-row{
+  grid-template-columns:46px minmax(130px,1fr) minmax(60px,80px)!important;
+}
+
+.monster-row.header{
+  font-size:11px!important;
+}
+
+.monster-tabs{
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+}
+
+.monster-tabs .btn{
+  min-width:0!important;
+  padding:0 6px!important;
+  font-size:12px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* Panneau latéral des temps */
+.side-panel-bg{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:12px;
+  background:rgba(0,0,0,.42);
+  backdrop-filter:blur(2px);
+  z-index:10001;
+}
+
+.side-panel-bg.show{
+  display:flex;
+}
+
+.side-panel{
+  width:min(720px,calc(100vw - 24px));
+  max-height:calc(100vh - 24px);
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  background:var(--panel);
+  border:3px solid var(--border);
+  border-radius:18px;
+  box-shadow:0 18px 45px rgba(0,0,0,.52);
+  overflow:hidden;
+}
+
+.side-panel-head{
+  min-height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:0 16px;
+  background:linear-gradient(#6b4423,#3b2414);
+  color:#fff4d6;
+}
+
+.side-panel-head h2{
+  margin:0;
+  font-size:22px;
+  color:#fff4d6;
+}
+
+.side-panel-body{
+  padding:12px;
+  overflow:auto;
+}
+
+.side-panel-foot{
+  min-height:56px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:10px 14px;
+  border-top:1px solid rgba(139,111,71,.35);
+  background:rgba(255,247,230,.35);
+}
+
+.run-time-columns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.run-time-category{
+  border:2px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,.12);
+  overflow:hidden;
+}
+
+.run-time-category h3{
+  margin:0;
+  padding:10px;
+  text-align:center;
+  font-size:16px;
+  background:rgba(0,0,0,.08);
+}
+
+.run-time-table{
+  display:flex;
+  flex-direction:column;
+  max-height:58vh;
+  overflow:auto;
+}
+
+.run-time-row{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:8px;
+  align-items:center;
+  padding:9px 10px;
+  border-top:1px solid rgba(139,111,71,.28);
+  font-size:13px;
+  font-weight:900;
+}
+
+.run-time-name{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.run-time-meta{
+  opacity:.7;
+  font-size:12px;
+}
+
+.run-time-empty{
+  padding:16px;
+  text-align:center;
+  font-weight:900;
+  opacity:.7;
+}
+
+.run-time-row button{
+  min-height:30px!important;
+  height:30px!important;
+  padding:0 8px!important;
+  font-size:12px!important;
+}
+
+/* Petits écrans */
+@media(max-width:768px){
+  body{
+    display:block!important;
+    padding:0!important;
+  }
+
+  .actions{
+    grid-template-columns:1fr 1fr!important;
+  }
+
+  #monsterLauncher{
+    width:100%!important;
+  }
+
+  .modal-bg{
+    padding:8px!important;
+  }
+
+  .modal{
+    width:calc(100vw - 16px)!important;
+    max-height:calc(100vh - 16px)!important;
+  }
+
+  .monster-tabs{
+    grid-template-columns:1fr 1fr!important;
+  }
+
+  .monster-tabs .btn:last-child{
+    grid-column:1 / -1;
+  }
+
+  .run-time-columns{
+    grid-template-columns:1fr;
+  }
+
+  .side-panel{
+    width:calc(100vw - 16px);
+    max-height:calc(100vh - 16px);
+  }
+}
+
+
+/* ===== Patch runs chrono : vraie fenêtre, pas de mini historique ===== */
+.chrono-history,
+.chrono-history-grid,
+.chrono-history-box{
+  display:none!important;
+}
+
+.chrono-history-open{
+  width:100%!important;
+  margin-top:8px!important;
+}
+
+.run-panel{
+  width:min(860px,calc(100vw - 24px))!important;
+  max-height:calc(100vh - 24px)!important;
+}
+
+.run-time-columns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.run-time-category{
+  border:2px solid var(--border);
+  border-radius:14px;
+  background:rgba(255,255,255,.12);
+  overflow:hidden;
+  min-width:0;
+}
+
+.run-time-category-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:10px 12px;
+  background:rgba(0,0,0,.08);
+  border-bottom:1px solid rgba(139,111,71,.25);
+}
+
+.run-time-category-head h3{
+  margin:0;
+  font-size:16px;
+}
+
+.run-time-stats{
+  font-size:12px;
+  font-weight:900;
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+.run-time-table{
+  max-height:58vh;
+  overflow:auto;
+}
+
+.run-time-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto auto auto;
+  gap:8px;
+  align-items:center;
+  padding:9px 10px;
+  border-top:1px solid rgba(139,111,71,.25);
+  font-size:13px;
+  font-weight:900;
+}
+
+.run-time-row:first-child{
+  border-top:none;
+}
+
+.run-time-name{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.run-time-time{
+  color:var(--blue);
+  white-space:nowrap;
+}
+
+.run-time-date{
+  opacity:.7;
+  font-size:12px;
+  white-space:nowrap;
+}
+
+.run-time-empty{
+  padding:18px;
+  text-align:center;
+  font-weight:900;
+  opacity:.7;
+}
+
+.run-time-row button{
+  min-height:30px!important;
+  height:30px!important;
+  padding:0 8px!important;
+  font-size:12px!important;
+}
+
+.side-panel-foot{
+  gap:8px;
+}
+
+@media(max-width:768px){
+  .run-time-columns{
+    grid-template-columns:1fr;
+  }
+
+  .run-time-row{
+    grid-template-columns:1fr auto;
+  }
+
+  .run-time-date{
+    display:none;
+  }
+
+  .run-time-row button{
+    grid-column:auto;
+  }
+}
+
+
+/* ===== Stats Fantasy UI moderne ===== */
+.stats-fantasy-dashboard{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.stats-fantasy-card{
+  position:relative;
+  border:2px solid var(--border);
+  border-radius:17px;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08));
+  overflow:hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 8px 18px rgba(0,0,0,.12);
+}
+
+.stats-fantasy-card.wide{
+  grid-column:1 / -1;
+}
+
+.stats-fantasy-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  background:rgba(0,0,0,.08);
+  border-bottom:1px solid rgba(139,111,71,.30);
+}
+
+.stats-fantasy-head h3{
+  margin:0;
+  font-size:16px;
+  line-height:1;
+}
+
+.stats-fantasy-badge{
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  color:#fff;
+  background:linear-gradient(#6b7280,#374151);
+  white-space:nowrap;
+}
+
+.stats-fantasy-body{
+  padding:12px;
+}
+
+.stats-kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+
+.stats-kpi-grid.two{
+  grid-template-columns:repeat(2,1fr);
+}
+
+.stats-kpi{
+  min-width:0;
+  padding:10px;
+  border:1px solid rgba(139,111,71,.34);
+  border-radius:14px;
+  background:rgba(255,255,255,.13);
+  text-align:center;
+}
+
+.stats-kpi-label{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:900;
+  line-height:1.15;
+}
+
+.stats-kpi-value{
+  margin-top:4px;
+  font-size:25px;
+  font-weight:900;
+  line-height:1;
+}
+
+.stats-kpi-sub{
+  margin-top:5px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+  line-height:1.15;
+}
+
+.stats-lines{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.stats-clean-line{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:9px 10px;
+  border:1px solid rgba(139,111,71,.28);
+  border-radius:12px;
+  background:rgba(255,255,255,.12);
+  font-weight:900;
+}
+
+.stats-clean-line span{
+  color:var(--muted);
+  font-size:13px;
+}
+
+.stats-clean-line strong{
+  font-size:16px;
+}
+
+.stats-green{color:var(--green)!important}
+.stats-blue{color:var(--blue)!important}
+.stats-orange{color:var(--orange)!important}
+.stats-red{color:var(--red)!important}
+.stats-purple{color:#7c3aed!important}
+
+.stats-mini-bar{
+  height:10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.18);
+  overflow:hidden;
+  margin-top:8px;
+  display:flex;
+}
+
+.stats-mini-bar span:first-child{
+  background:linear-gradient(#f59e0b,#b45309);
+}
+
+.stats-mini-bar span:last-child{
+  background:linear-gradient(#8b5cf6,#6d28d9);
+}
+
+.stats-record-box{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px 10px;
+  align-items:center;
+  padding:10px;
+  border-radius:14px;
+  border:1px solid rgba(139,111,71,.32);
+  background:rgba(255,255,255,.12);
+  font-weight:900;
+}
+
+.stats-record-box + .stats-record-box{
+  margin-top:8px;
+}
+
+.stats-record-label{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.stats-record-value{
+  font-size:18px;
+}
+
+@media(max-width:768px){
+  .stats-fantasy-dashboard{
+    grid-template-columns:1fr;
+  }
+
+  .stats-kpi-grid,
+  .stats-kpi-grid.two{
+    grid-template-columns:1fr;
+  }
+}
+
+
+/* ===== Contribution PP en statistiques ===== */
+.pp-contribution-bar span.morose{
+  background:linear-gradient(#f59e0b,#b45309);
+}
+.pp-contribution-bar span.tynril{
+  background:linear-gradient(#8b5cf6,#6d28d9);
+}
+.pp-contribution-bar span.zone{
+  background:linear-gradient(#22c55e,#15803d);
+}
+
+
+/* ===== Placement stable Options + Monstres ===== */
+.app{
+  position:relative!important;
+}
+
+.dashboard-options-btn{
+  position:absolute!important;
+  top:10px!important;
+  right:-58px!important;
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  font-size:20px!important;
+  z-index:30!important;
+  transform:none!important;
+  left:auto!important;
+}
+
+.dashboard-options-btn::after{
+  bottom:auto!important;
+  top:50%!important;
+  left:calc(100% + 10px)!important;
+  right:auto!important;
+  transform:translateY(-50%)!important;
+}
+
+.monster-below-prospection{
+  display:flex!important;
+  justify-content:center!important;
+  margin-top:10px!important;
+}
+
+.monster-below-prospection #monsterLauncher{
+  position:static!important;
+  width:min(260px,100%)!important;
+  min-width:0!important;
+  margin:0!important;
+  transform:none!important;
+  border-radius:999px!important;
+  z-index:auto!important;
+}
+
+/* ===== Historique timeline final ===== */
+.activity-dashboard{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.activity-summary{
+  display:grid;
+  grid-template-columns:1fr!important;
+  gap:8px;
+}
+
+.activity-summary-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  text-align:left;
+  border:1px solid rgba(139,111,71,.35);
+  border-radius:14px;
+  padding:9px 10px;
+  background:rgba(255,255,255,.13);
+  font-weight:900;
+}
+
+.activity-summary-label{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.activity-summary-value{
+  margin-top:0;
+  font-size:22px;
+  line-height:1;
+}
+
+.activity-tools{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+#activitySearch{
+  width:100%;
+  min-height:40px;
+}
+
+.activity-filters{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:8px;
+}
+
+.activity-filters .btn{
+  height:36px;
+  min-height:36px;
+  padding:0 8px;
+  font-size:12px;
+}
+
+.activity-filters .active{
+  outline:3px solid rgba(250,204,21,.55);
+  filter:brightness(1.12);
+}
+
+.activity-timeline{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.activity-day-group{
+  border:2px solid var(--border);
+  border-radius:16px;
+  background:rgba(255,255,255,.10);
+  overflow:hidden;
+}
+
+.activity-day-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 12px;
+  background:rgba(0,0,0,.08);
+  border-bottom:1px solid rgba(139,111,71,.28);
+  font-weight:900;
+}
+
+.activity-day-count{
+  color:#fff;
+  background:linear-gradient(#60a5fa,#2563eb);
+  padding:3px 8px;
+  border-radius:999px;
+  font-size:12px;
+}
+
+.activity-timeline-list{
+  position:relative;
+  padding:8px 10px 8px 20px;
+}
+
+.activity-timeline-list::before{
+  content:"";
+  position:absolute;
+  left:12px;
+  top:10px;
+  bottom:10px;
+  width:2px;
+  border-radius:99px;
+  background:rgba(139,111,71,.35);
+}
+
+.activity-row{
+  position:relative;
+  display:grid;
+  grid-template-columns:48px 32px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  min-height:34px;
+  padding:6px 8px 6px 2px;
+  border-radius:12px;
+  font-size:13px;
+  font-weight:900;
+}
+
+.activity-row:hover{
+  background:rgba(255,255,255,.16);
+}
+
+.activity-dot{
+  width:24px;
+  height:24px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:12px;
+  z-index:1;
+  box-shadow:0 3px 8px rgba(0,0,0,.20);
+}
+
+.activity-time{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.activity-message{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.activity-repeat{
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:12px;
+  color:#fff;
+  background:linear-gradient(#6b7280,#374151);
+}
+
+.activity-row.progression .activity-dot{background:linear-gradient(#22c55e,#15803d)!important}
+.activity-row.chrono .activity-dot{background:linear-gradient(#8b5cf6,#6d28d9)!important}
+.activity-row.system .activity-dot{background:linear-gradient(#60a5fa,#2563eb)!important}
+.activity-row.warning .activity-dot{background:linear-gradient(#f59e0b,#b45309)!important}
+.activity-row.error .activity-dot{background:linear-gradient(#dc2626,#7f1d1d)!important}
+
+.activity-empty{
+  padding:18px;
+  text-align:center;
+  font-weight:900;
+  opacity:.7;
+}
+
+@media(max-width:1180px){
+  .dashboard-options-btn{
+    right:10px!important;
+    top:10px!important;
+  }
+
+  .dashboard-options-btn::after{
+    top:calc(100% + 8px)!important;
+    left:auto!important;
+    right:0!important;
+    transform:none!important;
+  }
+}
+
+@media(max-width:768px){
+  .dashboard-options-btn{
+    top:8px!important;
+    right:8px!important;
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+  }
+
+  .activity-filters{
+    grid-template-columns:1fr 1fr!important;
+  }
+
+  .activity-row{
+    grid-template-columns:44px 28px minmax(0,1fr);
+  }
+
+  .activity-repeat{
+    grid-column:3;
+    justify-self:start;
+  }
+
+  .monster-below-prospection #monsterLauncher{
+    width:100%!important;
+  }
+}
+
+
+/* ===== Options : interface propre en cartes ===== */
+.options-modal{
+  width:min(860px,calc(100vw - 24px))!important;
+}
+
+.options-dashboard{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.options-section{
+  border:2px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  background:rgba(255,255,255,.11);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+}
+
+.options-section-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  background:rgba(0,0,0,.08);
+  border-bottom:1px solid rgba(139,111,71,.30);
+}
+
+.options-section-head h3{
+  margin:0;
+  font-size:16px;
+  line-height:1;
+}
+
+.options-section-head span{
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:900;
+  color:#fff;
+  background:linear-gradient(#6b7280,#374151);
+}
+
+.options-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  padding:12px;
+}
+
+.options-grid.two{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+
+.option-tile{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:10px;
+  padding:12px;
+  border:1px solid rgba(139,111,71,.34);
+  border-radius:14px;
+  background:rgba(255,255,255,.13);
+  font-weight:900;
+}
+
+.option-tile strong{
+  display:block;
+  font-size:15px;
+  margin-bottom:4px;
+}
+
+.option-tile small,
+.backup-copy small{
+  display:block;
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.3;
+  font-weight:900;
+}
+
+.option-tile .btn{
+  width:100%;
+  min-height:38px;
+}
+
+.backup-panel{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+}
+
+.backup-copy strong{
+  display:block;
+  font-size:15px;
+  margin-bottom:4px;
+}
+
+.backup-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  min-width:220px;
+}
+
+@media(max-width:768px){
+  .options-grid,
+  .options-grid.two{
+    grid-template-columns:1fr;
+  }
+
+  .backup-panel{
+    grid-template-columns:1fr;
+  }
+
+  .backup-actions{
+    min-width:0;
+    width:100%;
+  }
+}
+
+
+/* ===== Effet brillant barre de progression ===== */
+.progress-fill{
+  position:relative!important;
+  overflow:hidden!important;
+}
+
+.progress-fill::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-45%;
+  width:42%;
+  height:100%;
+  background:linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,.65),
+    transparent
+  );
+  transform:skewX(-22deg);
+  animation:progressShine 1.85s linear infinite;
+  pointer-events:none;
+}
+
+@keyframes progressShine{
+  0%{left:-45%}
+  100%{left:115%}
+}
+
+/* Quand les animations sont désactivées dans Options */
+body.no-anim .progress-fill::after{
+  display:none!important;
+  animation:none!important;
+}
+
+
+/* ===== Notifications : couleurs cohérentes avec les boutons ===== */
+.toast.run,
+.toast.pp,
+.toast.progress,
+.toast.green{
+  background:linear-gradient(#22c55e,#15803d)!important;
+}
+
+.toast.chrono,
+.toast.info,
+.toast.blue{
+  background:linear-gradient(#60a5fa,#2563eb)!important;
+}
+
+.toast.edit,
+.toast.warning,
+.toast.orange,
+.toast.mark{
+  background:linear-gradient(#f59e0b,#b45309)!important;
+}
+
+.toast.reset,
+.toast.delete,
+.toast.error,
+.toast.red{
+  background:linear-gradient(#dc2626,#7f1d1d)!important;
+}
+
+.toast.undo,
+.toast.gray{
+  background:linear-gradient(#6b7280,#374151)!important;
+}
+
+.toast.export{
+  background:linear-gradient(#22c55e,#15803d)!important;
+}
+
+.toast.import{
+  background:linear-gradient(#f59e0b,#b45309)!important;
+}
+
+
+/* ===== Notifications PP / progression / paliers ===== */
+.toast.pp-progress{
+  background:linear-gradient(135deg,#38bdf8,#1d4ed8)!important;
+  box-shadow:
+    0 8px 18px rgba(29,78,216,.38),
+    inset 0 1px 0 rgba(255,255,255,.35)!important;
+}
+
+.toast.milestone{
+  color:#3b2408!important;
+  background:
+    linear-gradient(135deg,#fff3b0,#facc15 40%,#b7791f)!important;
+  text-shadow:0 1px 0 rgba(255,255,255,.35)!important;
+  box-shadow:
+    0 0 0 2px rgba(255,255,255,.22),
+    0 0 18px rgba(250,204,21,.65),
+    0 8px 18px rgba(0,0,0,.28)!important;
+  animation:toastGoldPulse .9s ease-in-out infinite alternate;
+}
+
+@keyframes toastGoldPulse{
+  from{filter:brightness(1)}
+  to{filter:brightness(1.16)}
+}
+
+body.no-anim .toast.milestone{
+  animation:none!important;
+}
+
+
+
+/* ===== Image AuraPykur à 100% ===== */
+.pykur-img.aura-active{
+  filter:drop-shadow(0 0 14px rgba(250,204,21,.75));
+}
+
+
+/* ===== Aide champs temps moyens ===== */
+.field-help{
+  margin-top:6px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(139,111,71,.22);
+  font-size:12px;
+  line-height:1.4;
+  color:var(--muted);
+  font-weight:800;
+}
+
+.field-help strong{
+  color:var(--text);
+}
+
+
+/* ===== Correctifs notifications demandés ===== */
+
+/* Perte de PP / progression : rouge clair */
+.toast.pp-loss{
+  background:linear-gradient(135deg,#fca5a5,#dc2626)!important;
+  box-shadow:
+    0 8px 18px rgba(220,38,38,.34),
+    inset 0 1px 0 rgba(255,255,255,.35)!important;
+}
+
+/* Pause chrono : gris */
+.toast.pause{
+  background:linear-gradient(#9ca3af,#4b5563)!important;
+}
+
+/* Changement de profil : vert */
+.toast.profile{
+  background:linear-gradient(#22c55e,#15803d)!important;
+}
+
+
+/* =========================================================
+   REFONTE VISUELLE PREMIUM — Pykur Tracker
+   ========================================================= */
+
+:root{
+  --gold:#facc15;
+  --gold-dark:#b7791f;
+  --magic:#38bdf8;
+  --magic-dark:#1d4ed8;
+  --deep:#27170b;
+  --glass:rgba(255,255,255,.135);
+  --glass-strong:rgba(255,255,255,.19);
+}
+
+/* Fond plus profond avec vignette */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(circle at 50% 18%,rgba(250,204,21,.16),transparent 28%),
+    radial-gradient(circle at 18% 78%,rgba(56,189,248,.10),transparent 30%),
+    radial-gradient(circle at 82% 76%,rgba(245,158,11,.10),transparent 28%),
+    linear-gradient(90deg,rgba(0,0,0,.35),transparent 22%,transparent 78%,rgba(0,0,0,.35));
+}
+
+.app{
+  position:relative!important;
+  overflow:visible!important;
+  border-color:rgba(250,204,21,.45)!important;
+  box-shadow:
+    0 22px 60px rgba(0,0,0,.48),
+    0 0 0 1px rgba(255,255,255,.14),
+    inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+
+.app::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:22px;
+  pointer-events:none;
+  background:linear-gradient(135deg,rgba(250,204,21,.36),transparent 24%,transparent 76%,rgba(56,189,248,.26));
+  opacity:.8;
+  z-index:-1;
+}
+
+/* Cartes plus premium */
+.card,
+.dungeon-card,
+.stats-fantasy-card,
+.option-tile,
+.options-section,
+.run-time-category,
+.activity-day-group{
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,.085))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 9px 22px rgba(0,0,0,.12)!important;
+}
+
+/* Carte Pykur : vraie zone héro */
+.side > .card:first-child{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 25%,rgba(250,204,21,.28),transparent 36%),
+    linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.10))!important;
+}
+
+.side > .card:first-child::before{
+  content:"";
+  position:absolute;
+  inset:-35%;
+  background:
+    conic-gradient(from 0deg,transparent,rgba(250,204,21,.18),transparent,rgba(56,189,248,.12),transparent);
+  animation:pykurAuraSpin 9s linear infinite;
+  pointer-events:none;
+}
+
+body.no-anim .side > .card:first-child::before{
+  animation:none!important;
+}
+
+@keyframes pykurAuraSpin{
+  to{transform:rotate(360deg)}
+}
+
+.pykur-orb{
+  position:relative;
+  z-index:1;
+  width:190px;
+  max-width:100%;
+  aspect-ratio:1;
+  margin:0 auto 6px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:50%;
+  background:
+    radial-gradient(circle,rgba(255,255,255,.28),rgba(250,204,21,.10) 42%,transparent 70%);
+  filter:drop-shadow(0 0 18px rgba(250,204,21,.34));
+}
+
+.pykur-orb::after{
+  content:"";
+  position:absolute;
+  inset:12px;
+  border-radius:50%;
+  border:1px solid rgba(250,204,21,.28);
+  box-shadow:0 0 18px rgba(250,204,21,.24);
+  pointer-events:none;
+}
+
+.pykur-img{
+  position:relative;
+  z-index:2;
+}
+
+.progress-title{
+  position:relative;
+  z-index:1;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-size:13px!important;
+  color:var(--muted);
+}
+
+.progress-percent{
+  position:relative;
+  z-index:1;
+  font-size:32px!important;
+  text-shadow:0 2px 0 rgba(255,255,255,.16);
+}
+
+.progress-caption{
+  position:relative;
+  z-index:1;
+  margin-top:4px;
+  font-size:11px;
+  font-weight:900;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+
+/* Barre de progression : artefact magique */
+.progress-bar{
+  position:relative;
+  z-index:1;
+  height:26px!important;
+  background:
+    linear-gradient(#2f281e,#18140f)!important;
+  border:2px solid rgba(60,45,25,.95)!important;
+  box-shadow:
+    inset 0 3px 7px rgba(0,0,0,.45),
+    0 0 0 1px rgba(255,255,255,.12)!important;
+}
+
+.progress-fill{
+  background:
+    linear-gradient(90deg,#16a34a,#84cc16 42%,#facc15 72%,#38bdf8)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.38),
+    0 0 14px rgba(132,204,22,.45)!important;
+}
+
+/* Héro Pykur : titre + actions */
+.hero{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(250,204,21,.20),transparent 42%),
+    linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,.08))!important;
+}
+
+.hero h1{
+  background:linear-gradient(#fff8d0,#facc15 42%,#9a5a14);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent!important;
+  text-shadow:none!important;
+  filter:drop-shadow(0 2px 1px rgba(0,0,0,.22));
+  letter-spacing:.02em;
+}
+
+.farm-row{
+  padding:7px 10px;
+  border-radius:999px;
+  width:max-content;
+  max-width:100%;
+  margin:12px auto 0!important;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(139,111,71,.25);
+}
+
+/* Boutons : relief plus premium */
+.btn{
+  position:relative;
+  overflow:hidden;
+  letter-spacing:.01em;
+}
+
+.btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.24),transparent 48%);
+  pointer-events:none;
+}
+
+.btn:hover{
+  filter:brightness(1.08) saturate(1.05)!important;
+  transform:translateY(-2px)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    0 8px 18px rgba(0,0,0,.23)!important;
+}
+
+.btn:active{
+  transform:translateY(1px)!important;
+}
+
+/* Gros + / - plus lisibles */
+.big-btn{
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.32),
+    0 8px 20px rgba(0,0,0,.24)!important;
+}
+
+#plus{
+  filter:drop-shadow(0 0 7px rgba(34,197,94,.28));
+}
+
+#minus{
+  filter:drop-shadow(0 0 7px rgba(220,38,38,.22));
+}
+
+/* Cartes donjons : identité par donjon */
+.dungeon-card{
+  position:relative;
+  overflow:hidden;
+}
+
+.dungeon-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.22;
+}
+
+.dungeon-morose::before{
+  background:radial-gradient(circle at 10% 0%,rgba(245,158,11,.55),transparent 38%);
+}
+
+.dungeon-tynril::before{
+  background:radial-gradient(circle at 90% 0%,rgba(139,92,246,.55),transparent 38%);
+}
+
+.dungeon-card h3{
+  position:relative;
+  z-index:1;
+  padding:6px 0;
+  border-bottom:1px solid rgba(139,111,71,.24);
+}
+
+.dungeon-mini{
+  position:relative;
+  z-index:1;
+  transition:.18s ease;
+}
+
+.dungeon-mini:hover{
+  transform:translateY(-1px);
+  box-shadow:0 8px 15px rgba(0,0,0,.12);
+}
+
+/* Prospection mise en avant */
+.pp-row{
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 0%,rgba(56,189,248,.22),transparent 45%),
+    rgba(255,255,255,.13)!important;
+}
+
+#prospection{
+  font-size:30px;
+  text-shadow:0 0 10px rgba(37,99,235,.25);
+}
+
+/* Journal d'expédition */
+.activity-day-title{
+  background:
+    linear-gradient(90deg,rgba(107,68,35,.26),rgba(56,189,248,.08))!important;
+}
+
+.activity-row{
+  transition:.16s ease;
+}
+
+.activity-row:hover{
+  transform:translateX(2px);
+}
+
+.activity-message::first-letter{
+  text-transform:uppercase;
+}
+
+.activity-dot{
+  border:1px solid rgba(255,255,255,.35);
+}
+
+/* Modales plus soignées */
+.modal{
+  border-color:rgba(250,204,21,.42)!important;
+}
+
+.modal-head,
+.side-panel-head{
+  background:
+    radial-gradient(circle at 50% 0%,rgba(250,204,21,.28),transparent 60%),
+    linear-gradient(#6b4423,#2c180b)!important;
+}
+
+.modal-head h2,
+.side-panel-head h2{
+  letter-spacing:.01em;
+}
+
+/* Milestones : notification événementielle */
+.toast.milestone{
+  transform-origin:right center;
+}
+
+body:not(.no-anim) .toast.milestone{
+  animation:toastGoldPulse .9s ease-in-out infinite alternate, milestonePop .45s ease;
+}
+
+@keyframes milestonePop{
+  0%{transform:scale(.92) translateY(8px);opacity:0}
+  70%{transform:scale(1.04)}
+  100%{transform:scale(1);opacity:1}
+}
+
+/* Aura active : Pykur maxé */
+.pykur-img.aura-active{
+  filter:
+    drop-shadow(0 0 10px rgba(250,204,21,.95))
+    drop-shadow(0 0 22px rgba(56,189,248,.45))!important;
+}
+
+.pykur-img.aura-active + *{
+  color:var(--gold);
+}
+
+/* Responsive : garder la lisibilité */
+@media(max-width:768px){
+  .pykur-orb{
+    width:130px;
+  }
+
+  .progress-percent{
+    font-size:26px!important;
+  }
+
+  .farm-row{
+    width:100%;
+  }
+}
+
+
+/* Flash léger de palier */
+.app.milestone-flash{
+  animation:milestoneAppFlash .9s ease;
+}
+
+@keyframes milestoneAppFlash{
+  0%{box-shadow:0 22px 60px rgba(0,0,0,.48),0 0 0 rgba(250,204,21,0)}
+  35%{box-shadow:0 22px 60px rgba(0,0,0,.48),0 0 38px rgba(250,204,21,.78)}
+  100%{box-shadow:0 22px 60px rgba(0,0,0,.48),0 0 0 rgba(250,204,21,0)}
+}
+
+body.no-anim .app.milestone-flash{
+  animation:none!important;
+}
+
+
+/* ===== Ajustements demandés après refonte premium ===== */
+
+/* Les boutons premium avaient overflow:hidden, ce qui coupait les infobulles */
+.btn.tooltip,
+.tooltip.btn{
+  overflow:visible!important;
+}
+
+.btn.tooltip::after,
+.tooltip.btn::after{
+  z-index:50000!important;
+}
+
+/* Barre de progression : fin plus naturelle, sans bleu */
+.progress-fill{
+  background:
+    linear-gradient(90deg,#16a34a,#65a30d 48%,#84cc16 72%,#facc15)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.38),
+    0 0 14px rgba(132,204,22,.45)!important;
+}
+
+/* Retrait du fondu bleu autour de la prospection */
+.pp-row{
+  background:rgba(255,255,255,.13)!important;
+}
+
+/* Logo au centre entre + et - */
+.site-logo-title{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:58px!important;
+}
+
+.site-logo-title img{
+  max-height:58px;
+  max-width:min(260px,100%);
+  object-fit:contain;
+  display:block;
+  filter:
+    drop-shadow(0 2px 1px rgba(0,0,0,.25))
+    drop-shadow(0 0 8px rgba(250,204,21,.28));
+}
+
+/* Si le logo n'est pas chargé, éviter un bloc cassé trop grand */
+.site-logo-title img:not([src]),
+.site-logo-title img[src=""]{
+  display:none;
+}
+
+
+/* ===== Correctif option Animations désactivées ===== */
+body.no-anim .btn,
+body.no-anim .btn:hover,
+body.no-anim .btn:active,
+body.no-anim .dungeon-mini,
+body.no-anim .dungeon-mini:hover,
+body.no-anim .activity-row,
+body.no-anim .activity-row:hover{
+  transform:none!important;
+  transition:none!important;
+}
+
+body.no-anim .btn:hover{
+  filter:none!important;
+}
+
+body.no-anim .progress-fill{
+  transition:none!important;
+}
+
+body.no-anim .progress-fill::after,
+body.no-anim .side > .card:first-child::before{
+  display:none!important;
+  content:none!important;
+  animation:none!important;
+}
+
+body.no-anim .pykur-img.pop,
+body.no-anim .toast.milestone,
+body.no-anim .app.milestone-flash{
+  animation:none!important;
+}
+
+body.no-anim .pykur-img{
+  transition:none!important;
+}
+
+/* Les infobulles restent visibles même animations désactivées */
+body.no-anim .tooltip::after{
+  transition:none!important;
+}
+
+
+/* ===== Correctif définitif infobulles + / - et monstres ===== */
+
+/* Les infobulles doivent pouvoir sortir des blocs */
+.app,
+.layout,
+.main,
+.hero,
+.title-row,
+.actions,
+.monster-modal,
+.monster-modal .modal-body,
+.monster-tabs{
+  overflow:visible!important;
+}
+
+/* Mais on garde le tableau monstres scrollable */
+.monster-table{
+  overflow:auto!important;
+}
+
+/* Le conteneur modal reste cadré, mais les onglets passent au-dessus */
+.monster-tabs{
+  position:relative!important;
+  z-index:99999!important;
+}
+
+/* Boutons + et - au-dessus du logo et des cartes */
+.title-row{
+  position:relative!important;
+  z-index:99999!important;
+}
+
+#plus,
+#minus{
+  position:relative!important;
+  z-index:100000!important;
+  overflow:visible!important;
+}
+
+/* Tous les boutons avec tooltip doivent laisser sortir leur bulle */
+.btn.tooltip,
+.tooltip.btn,
+.monster-tabs .tooltip{
+  overflow:visible!important;
+}
+
+/* Bulle plus lisible et toujours au premier plan */
+.tooltip::after{
+  width:max-content!important;
+  min-width:140px!important;
+  max-width:220px!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+  word-break:normal!important;
+  text-align:center!important;
+  z-index:999999!important;
+}
+
+/* Bulle + / - : position propre */
+#plus::after,
+#minus::after{
+  bottom:calc(100% + 10px)!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  z-index:999999!important;
+}
+
+/* Bulles monstres : éviter que le texte dépasse */
+.monster-tabs .tooltip::after{
+  max-width:180px!important;
+  min-width:150px!important;
+  line-height:1.25!important;
+  white-space:normal!important;
+  overflow-wrap:break-word!important;
+}
+
+/* Correction du cas où un bouton premium cache la bulle avec son ::before */
+.btn::before{
+  pointer-events:none!important;
+  z-index:0!important;
+}
+
+.btn > *,
+.btn{
+  isolation:isolate;
+}
+
+
+/* ===== Correctif superposition modales > dashboard ===== */
+
+/* Les fenêtres doivent toujours être au-dessus du dashboard */
+.modal-bg.show,
+.side-panel-bg.show{
+  z-index:2000000!important;
+}
+
+.modal-bg.show .modal,
+.side-panel-bg.show .side-panel{
+  position:relative!important;
+  z-index:2000001!important;
+}
+
+/* Les boutons + / - et le logo restent sous les modales */
+.title-row,
+#plus,
+#minus,
+.site-logo-title{
+  z-index:1000!important;
+}
+
+/* Mais leurs infobulles restent OK quand aucune modale n'est ouverte */
+body:not(:has(.modal-bg.show)):not(:has(.side-panel-bg.show)) #plus,
+body:not(:has(.modal-bg.show)):not(:has(.side-panel-bg.show)) #minus,
+body:not(:has(.modal-bg.show)):not(:has(.side-panel-bg.show)) .title-row{
+  z-index:100000!important;
+}
+
+/* Quand une modale est ouverte, aucun élément du dashboard ne doit passer devant */
+body:has(.modal-bg.show) .app,
+body:has(.side-panel-bg.show) .app{
+  z-index:1!important;
+}
+
+/* Les infobulles dans la fenêtre Monstres restent au-dessus de la modale */
+.modal-bg.show .monster-tabs,
+.modal-bg.show .monster-tabs .tooltip,
+.modal-bg.show .monster-tabs .tooltip::after{
+  z-index:2000002!important;
+}
+
+</style>
+</head>
+<body>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<main class="app">
+  <button class="btn btn-blue tooltip dashboard-options-btn" id="optionsButton" data-tooltip="Ouvre les options." aria-label="Options">⚙️</button>
+  <div class="layout">
+    <aside class="side">
+      <section class="card">
+        <div class="pykur-orb">
+          <img src="./images/pykur.png" class="pykur-img" id="pykurImg" alt="Pykur">
+        </div>
+        <div class="progress-title">Progression du Pykur</div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-percent" id="progressPercent">0.00 %</div>
+      </section>
+
+      <section class="card chrono-card">
+        <div class="chrono-title">⏱️ Chronomètre</div>
+        <div class="chrono-time" id="chronoDisplay">00:00:00</div>
+        <div class="chrono-grid">
+          <button class="btn btn-green tooltip" id="chronoStart" data-tooltip="Lance le chronomètre.">▶ Start</button>
+          <button class="btn btn-gray tooltip" id="chronoPause" data-tooltip="Met le chronomètre en pause.">⏸ Pause</button>
+          <button class="btn btn-red tooltip" id="chronoReset" data-tooltip="Remet le chrono à zéro.">↺ Reset</button>
+          <button class="btn btn-orange tooltip" id="markTime" data-tooltip="Enregistre le temps actuel dans l’historique du donjon sélectionné.">🏷 Marquer</button>
+        </div>
+        <button class="btn btn-blue tooltip chrono-history-open" id="openRunTimes" data-tooltip="Ouvre la fenêtre des runs chronométrées.">📋 Runs chrono</button>
+      </section>
+    </aside>
+
+    <section class="main">
+      <section class="card profile-row">
+        <label for="profileSelect">Profil</label>
+        <select id="profileSelect"></select>
+        <button class="btn btn-green tooltip" id="createProfile" data-tooltip="Crée un nouveau profil vide.">+ Profil</button>
+        <button class="btn btn-orange tooltip" id="renameProfile" data-tooltip="Renomme le profil actuel.">Renommer</button>
+        <button class="btn btn-red tooltip" id="deleteProfile" data-tooltip="Supprime le profil actuel.">Supprimer</button>
+      </section>
+
+      <section class="card hero">
+        <div class="title-row">
+          <button class="btn btn-green big-btn tooltip" id="plus" data-tooltip="Ajouter une run">+</button>
+          <h1 class="site-logo-title"><img src="./images/logo.png" alt="Pykur"></h1>
+          <button class="btn btn-red big-btn tooltip" id="minus" data-tooltip="Retirer une run">−</button>
+        </div>
+
+        <div class="farm-row">
+          <span>Farm :</span>
+          <select id="farmSelect">
+            <option value="morose">Donjon Morose</option>
+            <option value="tynril">Donjon Tynril</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-orange tooltip" id="editRuns" data-tooltip="Modifie le nombre de donjons du farm sélectionné.">✏️ Modifier donjon</button>
+          <button class="btn btn-blue tooltip" id="activityButton" data-tooltip="Ouvre l’historique des actions.">📜 Historique</button>
+          <button class="btn btn-blue tooltip" id="statsButton" data-tooltip="Ouvre les statistiques du profil.">📊 Stats</button>
+<button class="btn btn-gray tooltip" id="undoButton" data-tooltip="Annule la dernière action importante.">↶ Annuler</button>
+          <button class="btn btn-red tooltip" id="resetButton" data-tooltip="Remet le profil actuel à zéro.">↻ Reset</button>
+        </div>
+      </section>
+
+      <section class="dungeon-summary">
+        <div class="card dungeon-card dungeon-morose">
+          <h3>Donjon Morose</h3>
+          <div class="dungeon-mini">
+            <div class="dungeon-label">Effectués</div>
+            <div class="dungeon-value green-text" id="doneMorose">0</div>
+          </div>
+          <div class="dungeon-mini">
+            <div class="dungeon-label">Restants</div>
+            <div class="dungeon-value red-text" id="remainMorose">0</div>
+          </div>
+          <div class="dungeon-mini full tooltip" id="moroseEstimateBox" data-tooltip="Clique pour renseigner ton temps moyen par donjon Morose.">
+            <div class="dungeon-label">Temps estimé restant</div>
+            <div class="dungeon-value blue-text" id="timeMorose">≈ 0s</div>
+          </div>
+        </div>
+
+        <div class="card dungeon-card dungeon-tynril">
+          <h3>Donjon Tynril</h3>
+          <div class="dungeon-mini">
+            <div class="dungeon-label">Effectués</div>
+            <div class="dungeon-value green-text" id="doneTynril">0</div>
+          </div>
+          <div class="dungeon-mini">
+            <div class="dungeon-label">Restants</div>
+            <div class="dungeon-value red-text" id="remainTynril">0</div>
+          </div>
+          <div class="dungeon-mini full tooltip" id="tynrilEstimateBox" data-tooltip="Clique pour renseigner ton temps moyen par donjon Tynril.">
+            <div class="dungeon-label">Temps estimé restant</div>
+            <div class="dungeon-value blue-text" id="timeTynril">≈ 0s</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card pp-row">
+        <span>Prospection :</span>
+        <span class="blue-text" id="prospection">0</span>
+        <img src="./images/prospection.png" alt="Prospection">
+      </section>
+      <div class="monster-below-prospection">
+        <button class="btn btn-orange tooltip" id="monsterLauncher" data-tooltip="Ouvre la fenêtre des monstres tués.">👹 Monstres</button>
+      </div>
+    </section>
+  </div>
+</main>
+
+
+
+<!-- RUN TIMES PANEL -->
+<div class="side-panel-bg" id="runTimesPanel">
+  <aside class="side-panel run-panel">
+    <div class="side-panel-head">
+      <h2>📋 Runs chronométrées</h2>
+      <button class="btn btn-red modal-close" id="closeRunTimes" type="button">✕</button>
+    </div>
+    <div class="side-panel-body">
+      <div class="run-time-columns">
+        <section class="run-time-category">
+          <div class="run-time-category-head">
+            <h3>Donjon Morose</h3>
+            <div class="run-time-stats" id="runStatsMorose">0 run</div>
+          </div>
+          <div class="run-time-table" id="runTimesMorose"></div>
+        </section>
+        <section class="run-time-category">
+          <div class="run-time-category-head">
+            <h3>Donjon Tynril</h3>
+            <div class="run-time-stats" id="runStatsTynril">0 run</div>
+          </div>
+          <div class="run-time-table" id="runTimesTynril"></div>
+        </section>
+      </div>
+    </div>
+    <div class="side-panel-foot">
+      <button class="btn btn-red" id="clearRunTimes" type="button">Vider les temps</button>
+      <button class="btn btn-gray" id="closeRunTimesBottom" type="button">Fermer</button>
+    </div>
+  </aside>
+</div>
+
+<!-- STATS -->
+<div class="modal-bg" id="statsModal">
+  <div class="modal">
+    <div class="modal-head"><h2>📊 Statistiques</h2><button class="btn btn-red modal-close" data-close="statsModal">✕</button></div>
+    <div class="modal-body"><div class="stats-fantasy-dashboard" id="statsContent"></div></div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="statsModal">Fermer</button></div>
+  </div>
+</div>
+
+<!-- OPTIONS -->
+<div class="modal-bg" id="optionsModal">
+  <div class="modal options-modal">
+    <div class="modal-head">
+      <h2>⚙️ Options</h2>
+      <button class="btn btn-red modal-close" data-close="optionsModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="options-dashboard">
+
+        <section class="options-section">
+          <div class="options-section-head">
+            <h3>🎨 Interface</h3>
+            <span>Affichage</span>
+          </div>
+          <div class="options-grid">
+            <div class="option-tile">
+              <div>
+                <strong>Mode nuit</strong>
+                <small>Assombrit l’interface et réduit la luminosité.</small>
+              </div>
+              <button class="btn btn-blue tooltip" id="toggleNight" data-tooltip="Active ou désactive le mode nuit."></button>
+            </div>
+
+            <div class="option-tile">
+              <div>
+                <strong>Animations</strong>
+                <small>Active les petits effets visuels du tracker.</small>
+              </div>
+              <button class="btn btn-blue tooltip" id="toggleAnim" data-tooltip="Active ou désactive les animations."></button>
+            </div>
+
+            <div class="option-tile">
+              <div>
+                <strong>Infobulles</strong>
+                <small>Affiche les aides au survol des boutons.</small>
+              </div>
+              <button class="btn btn-blue tooltip" id="toggleTooltips" data-tooltip="Active ou désactive les infobulles."></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="options-section">
+          <div class="options-section-head">
+            <h3>🔔 Retour utilisateur</h3>
+            <span>Feedback</span>
+          </div>
+          <div class="options-grid two">
+            <div class="option-tile">
+              <div>
+                <strong>Notifications</strong>
+                <small>Affiche les messages quand une action est effectuée.</small>
+              </div>
+              <button class="btn btn-blue tooltip" id="toggleNotif" data-tooltip="Active ou désactive les notifications."></button>
+            </div>
+
+            <div class="option-tile">
+              <div>
+                <strong>Sons</strong>
+                <small>Active les bruitages des actions et paliers.</small>
+              </div>
+              <button class="btn btn-blue tooltip" id="toggleSound" data-tooltip="Active ou désactive les sons."></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="options-section">
+          <div class="options-section-head">
+            <h3>💾 Sauvegarde</h3>
+            <span>Données</span>
+          </div>
+          <div class="backup-panel">
+            <div class="backup-copy">
+              <strong>Profils et progression</strong>
+              <small>Exporte ou importe tous tes profils, monstres, runs, options et historiques.</small>
+            </div>
+            <div class="backup-actions">
+              <button class="btn btn-green tooltip" id="exportSave" data-tooltip="Télécharge une sauvegarde complète au format JSON.">Exporter</button>
+              <button class="btn btn-orange tooltip" id="importSave" data-tooltip="Importe une sauvegarde JSON existante.">Importer</button>
+              <input id="importSaveInput" type="file" accept="application/json,.json" style="display:none">
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-gray" data-close="optionsModal">Fermer</button>
+    </div>
+  </div>
+</div>
+    </div>
+<!-- HISTORY -->
+<div class="modal-bg" id="activityModal">
+  <div class="modal">
+    <div class="modal-head"><h2>📜 Historique</h2><button class="btn btn-red modal-close" data-close="activityModal">✕</button></div>
+    <div class="modal-body">
+      <div class="activity-dashboard">
+        <div class="activity-summary" id="activitySummary"></div>
+        <div class="activity-tools">
+          <input id="activitySearch" type="search" placeholder="Rechercher dans l’historique...">
+          <div class="activity-filters">
+            <button class="btn btn-blue active" data-activity-filter="all">Tout</button>
+            <button class="btn btn-green" data-activity-filter="progression">Progression</button>
+            <button class="btn btn-orange" data-activity-filter="chrono">Chrono</button>
+            <button class="btn btn-gray" data-activity-filter="system">Système</button>
+          </div>
+        </div>
+        <div class="activity-timeline" id="activityContent"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-red" id="clearActivity">Vider</button>
+      <button class="btn btn-gray" data-close="activityModal">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MONSTERS -->
+<div class="modal-bg" id="monstersModal">
+  <div class="modal monster-modal">
+    <div class="modal-head"><h2>👹 Monstres tués</h2><button class="btn btn-red modal-close" data-close="monstersModal">✕</button></div>
+    <div class="modal-body">
+      <div class="monster-tabs">
+        <button class="btn btn-blue tooltip active" data-tab="morose" data-tooltip="Affiche les monstres tués en Donjon Morose.">Morose</button>
+        <button class="btn btn-blue tooltip" data-tab="tynril" data-tooltip="Affiche les monstres tués en Donjon Tynril.">Tynril</button>
+        <button class="btn btn-blue tooltip" data-tab="zone" data-tooltip="Affiche les monstres tués en zone.">Zone</button>
+        <button class="btn btn-blue tooltip" data-tab="all" data-tooltip="Affiche tous les monstres et le total par source.">Tous</button>
+        <button class="btn btn-orange tooltip" id="editMobs" data-tooltip="Corrige manuellement les compteurs de monstres.">🧩 Modifier</button>
+      </div>
+      <div class="monster-table" id="monsterTable"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-gray" data-close="monstersModal">Fermer</button></div>
+  </div>
+</div>
+
+<!-- EDIT MOBS -->
+<div class="modal-bg" id="editMobsModal">
+  <div class="modal">
+    <div class="modal-head"><h2>🧩 Modifier monstres</h2><button class="btn btn-red modal-close" data-close="editMobsModal">✕</button></div>
+    <div class="modal-body">
+      <div class="mob-edit-grid header"><span></span><span>Monstre</span><span>Morose</span><span>Tynril</span><span>Zone</span></div>
+      <div id="mobEditList"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-green" id="saveMobs">Valider</button>
+      <button class="btn btn-gray" data-close="editMobsModal">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PP_MAX=90;
+const mobs={
+  chiendent:{name:"Chiendent",img:"chiendent.png",ppNeed:80,cat:["morose","tynril","zone"]},
+  nerbe:{name:"Nerbe",img:"nerbe.png",ppNeed:80,cat:["morose","tynril","zone"]},
+  fecorce:{name:"Fécorce",img:"fecorce.png",ppNeed:60,cat:["morose","tynril","zone"]},
+  abrakleur:{name:"Abrakleur Sombre",img:"abrakleur.png",ppNeed:40,cat:["morose","tynril","zone"]},
+  bitouf:{name:"Bitouf Sombre",img:"bitouf.png",ppNeed:40,cat:["morose","tynril","zone"]},
+  floribonde:{name:"Floribonde",img:"floribonde.png",ppNeed:40,cat:["morose","tynril","zone"]},
+  brouture:{name:"Brouture",img:"brouture.png",ppNeed:60,cat:["tynril","zone"]},
+  tynrilAhuri:{name:"Tynril Ahuri",img:"tynril-ahuri.png",ppNeed:3,cat:["tynril"]},
+  tynrilPerfide:{name:"Tynril Perfide",img:"tynril-perfide.png",ppNeed:3,cat:["tynril"]},
+  tynrilDeconcerte:{name:"Tynril Déconcerté",img:"tynril-deconcerte.png",ppNeed:3,cat:["tynril"]},
+  tynrilConsterne:{name:"Tynril Consterné",img:"tynril-consterne.png",ppNeed:3,cat:["tynril"]}
+};
+
+const gains={
+  morose:{chiendent:1,nerbe:1,fecorce:1,abrakleur:1,bitouf:1,floribonde:2},
+  tynril:{tynrilConsterne:1,tynrilDeconcerte:1,tynrilPerfide:1,tynrilAhuri:1,fecorce:2,abrakleur:3,brouture:3,chiendent:5,nerbe:6,floribonde:6,bitouf:10}
+};
+const zoneIds=["abrakleur","bitouf","brouture","chiendent","fecorce","floribonde","nerbe"];
+
+const defaultData=()=>({
+  runs:{morose:0,tynril:0},
+  mobs:{morose:{},tynril:{},zone:{}},
+  settings:{night:false,animations:true,tooltips:true,notifications:true,sound:true},
+  stats:{avgMorose:125,avgTynril:600,milestones:{},days:{},days:{}},
+  chrono:{seconds:0,running:false,startedAt:null,marks:[]},
+  ui:{farm:"morose",tab:"morose"},
+  activity:[],
+  undo:[]
+});
+
+let store=null;
+let activeProfile=null;
+let data=defaultData();
+let chronoTimer=null;
+
+const sounds={
+  click:new Audio("./sons/click.mp3"),
+  success:new Audio("./sons/success.mp3"),
+  error:new Audio("./sons/error.mp3"),
+  warning:new Audio("./sons/warning.mp3"),
+  unlock:new Audio("./sons/unlock.mp3"),
+
+  pp:new Audio("./sons/pp_gain.wav"),
+  mark:new Audio("./sons/run_mark.wav"),
+  reset:new Audio("./sons/reset_soft.wav"),
+  chrono:new Audio("./sons/chrono_toggle.wav"),
+  export:new Audio("./sons/export_save.wav"),
+  import:new Audio("./sons/mport_save.wav"),
+  undo:new Audio("./sons/undo_soft.wav")
+};
+Object.values(sounds).forEach(s=>{s.volume=.14});
+
+sounds.import.addEventListener("error",()=>{
+  sounds.import=new Audio("./sons/import_save.wav");
+  sounds.import.volume=.14;
+},{once:true});
+
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+
+function clone(x){return JSON.parse(JSON.stringify(x))}
+function today(){return new Date().toISOString().split("T")[0]}
+
+function ensureDay(date=today()){
+  if(!data.stats)data.stats=defaultData().stats;
+  if(!data.stats.days)data.stats.days={};
+
+  if(!data.stats.days[date]){
+    data.stats.days[date]={
+      morose:0,
+      tynril:0,
+      pp:0,
+      startPP:currentPP()
+    };
+  }
+
+  if(data.stats.days[date].startPP===undefined){
+    data.stats.days[date].startPP=Math.max(0,currentPP()-(data.stats.days[date].pp||0));
+  }
+
+  return data.stats.days[date];
+}
+
+function addDailyRun(farm,delta,ppDelta=0){
+  const d=ensureDay();
+
+  d[farm]=(d[farm]||0)+delta;
+  if(d[farm]<0)d[farm]=0;
+
+  d.pp=(d.pp||0)+ppDelta;
+  if(d.pp<0)d.pp=0;
+}
+
+function syncTodayPPGain(){
+  const d=ensureDay();
+  d.pp=Math.max(0,currentPP()-(d.startPP||0));
+}
+
+function dayTotal(day){
+  return (day?.morose||0)+(day?.tynril||0);
+}
+
+function sortedActiveDays(){
+  if(!data.stats?.days)return [];
+  return Object.keys(data.stats.days)
+    .filter(d=>dayTotal(data.stats.days[d])>0)
+    .sort();
+}
+
+function calcCurrentStreak(){
+  const days=sortedActiveDays();
+  if(!days.length)return 0;
+
+  let streak=0;
+  let cursor=new Date(today()+"T00:00:00");
+
+  while(true){
+    const key=cursor.toISOString().split("T")[0];
+    if(dayTotal(data.stats.days[key])>0){
+      streak++;
+      cursor.setDate(cursor.getDate()-1);
+    }else{
+      break;
+    }
+  }
+  return streak;
+}
+
+function calcBestStreak(){
+  const days=sortedActiveDays();
+  if(!days.length)return 0;
+  let best=1,cur=1;
+  for(let i=1;i<days.length;i++){
+    const prev=new Date(days[i-1]+"T00:00:00");
+    const now=new Date(days[i]+"T00:00:00");
+    const diff=Math.round((now-prev)/86400000);
+    if(diff===1){
+      cur++;
+      best=Math.max(best,cur);
+    }else{
+      cur=1;
+    }
+  }
+  return best;
+}
+
+function calcBestDay(){
+  const entries=Object.entries(data.stats?.days||{});
+  if(!entries.length)return null;
+  let best=null;
+  for(const [date,day] of entries){
+    const total=dayTotal(day);
+    if(total<=0)continue;
+    if(!best || total>best.total){
+      best={date,day,total};
+    }
+  }
+  return best;
+}
+
+function calcAveragePerActiveDay(){
+  const days=sortedActiveDays();
+  if(!days.length)return 0;
+  const total=days.reduce((sum,d)=>sum+dayTotal(data.stats.days[d]),0);
+  return total/days.length;
+}
+
+function ensureData(){
+  if(!data.stats)data.stats=defaultData().stats;
+  if(!data.stats.days)data.stats.days={};
+  for(const id in mobs){
+    for(const area of ["morose","tynril","zone"]){
+      if(data.mobs[area][id]===undefined)data.mobs[area][id]=0;
+    }
+  }
+}
+
+function makeStore(){
+  const id="p_"+Date.now();
+  return {active:id,profiles:{[id]:{name:"Pykur principal",data:defaultData()}}};
+}
+
+function load(){
+  try{
+    store=JSON.parse(localStorage.getItem("pykur_clean_v1"))||makeStore();
+  }catch(e){store=makeStore()}
+  activeProfile=store.active;
+  data=Object.assign(defaultData(), store.profiles[activeProfile]?.data||{});
+  data.runs=Object.assign({morose:0,tynril:0},data.runs||{});
+  data.mobs=Object.assign({morose:{},tynril:{},zone:{}},data.mobs||{});
+  data.settings=Object.assign(defaultData().settings,data.settings||{});
+  data.stats=Object.assign(defaultData().stats,data.stats||{}); if(!data.stats.days)data.stats.days={};
+  data.chrono=Object.assign(defaultData().chrono,data.chrono||{}); if(data.chrono.running && !data.chrono.startedAt)data.chrono.startedAt=Date.now();
+  data.ui=Object.assign(defaultData().ui,data.ui||{});
+  data.activity=data.activity||[];
+  data.undo=data.undo||[];
+  ensureData();
+  applySettings();
+  renderProfiles();
+  renderAll();
+  if(data.chrono.running)startChrono(false);
+}
+
+function save(){
+  ensureData();
+  store.active=activeProfile;
+  store.profiles[activeProfile].data=clone(data);
+  localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
+}
+
+function pushUndo(){
+  data.undo.unshift(clone({runs:data.runs,mobs:data.mobs}));
+  data.undo=data.undo.slice(0,20);
+}
+
+function addActivity(message,type="info"){
+  data.activity.unshift({message,type,date:new Date().toISOString()});
+  data.activity=data.activity.slice(0,80);
+}
+
+function playSound(type="click"){
+  if(!data.settings.sound)return;
+  const s=sounds[type]||sounds.click;
+  if(!s)return;
+  try{s.currentTime=0;s.play().catch(()=>{})}catch(e){}
+}
+
+function toast(msg,type="info",soundType=null){
+  const visualType=type||"info";
+  playSound(soundType||visualType);
+
+  if(!data.settings.notifications)return;
+
+  const wrap=$("#toastWrap");
+
+  while(wrap.children.length >= 6){
+    wrap.firstElementChild?.remove();
+  }
+
+  const t=document.createElement("div");
+  t.className="toast "+visualType;
+  t.textContent=msg;
+  wrap.appendChild(t);
+
+  setTimeout(()=>t.remove(),2500);
+}
+
+function applySettings(){
+  document.body.classList.toggle("night",data.settings.night);
+  document.body.classList.toggle("no-anim",!data.settings.animations);
+  document.body.classList.toggle("no-tooltips",!data.settings.tooltips);
+  $("#toggleNight").textContent=data.settings.night?"Activé":"Désactivé";
+  $("#toggleAnim").textContent=data.settings.animations?"Activées":"Désactivées";
+  $("#toggleTooltips").textContent=data.settings.tooltips?"Activées":"Désactivées";
+  $("#toggleNotif").textContent=data.settings.notifications?"Activées":"Désactivées";
+  if($("#toggleSound"))$("#toggleSound").textContent=data.settings.sound?"Activés":"Désactivés";
+}
+
+function totalMobs(){
+  const t={};
+  for(const id in mobs)t[id]=(data.mobs.morose[id]||0)+(data.mobs.tynril[id]||0)+(data.mobs.zone[id]||0);
+  return t;
+}
+
+function ppFrom(src){
+  let pp=0;
+  for(const id in mobs)pp+=Math.floor((src[id]||0)/mobs[id].ppNeed);
+  return Math.min(pp,PP_MAX);
+}
+
+function ppContributionBySource(){
+  const morosePP=ppFrom(data.mobs.morose||{});
+  const tynrilPP=ppFrom(data.mobs.tynril||{});
+  const zonePP=ppFrom(data.mobs.zone||{});
+  const total=morosePP+tynrilPP+zonePP;
+
+  return {
+    morose:morosePP,
+    tynril:tynrilPP,
+    zone:zonePP,
+    total
+  };
+}
+
+function percentPart(value,total){
+  if(!total || total<=0)return 0;
+  return Math.round((value/total)*100);
+}
+
+function currentPP(){return ppFrom(totalMobs())}
+
+function simulateRemaining(farm){
+  if(currentPP()>=PP_MAX)return 0;
+  const sim=clone(totalMobs());
+  let count=0;
+  while(ppFrom(sim)<PP_MAX && count<10000){
+    count++;
+    for(const id in gains[farm])sim[id]=(sim[id]||0)+gains[farm][id];
+  }
+  return count;
+}
+
+function applyRunDelta(farm,delta){
+  data.runs[farm]+=delta;
+  if(data.runs[farm]<0)data.runs[farm]=0;
+
+  for(const id in gains[farm]){
+    data.mobs[farm][id]=(data.mobs[farm][id]||0)+(gains[farm][id]*delta);
+    if(data.mobs[farm][id]<0)data.mobs[farm][id]=0;
+  }
+}
+
+function setRunsSynced(farm,newValue){
+  const target=Math.max(0,parseInt(newValue,10)||0);
+  const current=data.runs[farm]||0;
+  const delta=target-current;
+  if(delta===0)return false;
+  applyRunDelta(farm,delta);
+  return delta;
+}
+
+function resetMilestonesIfNeeded(){
+  const pp=currentPP();
+  if(!data.stats.milestones)data.stats.milestones={};
+  [25,50,75,100].forEach(p=>{
+    const target=Math.round(PP_MAX*p/100);
+    if(pp<target)data.stats.milestones[p]=false;
+  });
+}
+
+function addRun(delta){
+  const farm=$("#farmSelect").value;
+  if(delta<0 && data.runs[farm]<=0)return;
+  const oldPP=currentPP();
+  pushUndo();
+  applyRunDelta(farm,delta);
+  resetMilestonesIfNeeded();
+  const farmLabel=farm==="morose"?"Morose":"Tynril";
+  addActivity(`${delta>0?"+1":"-1"} run ${farmLabel}`,delta>0?"success":"warning");
+  const newPP=currentPP();
+  const ppDelta=newPP-oldPP;
+  addDailyRun(farm,delta,ppDelta);
+  syncTodayPPGain();
+  notifyPPProgress(oldPP,newPP);
+
+  if(ppDelta>0){
+    addActivity(`Pykur gagne +${ppDelta} PP (${oldPP} → ${newPP})`,"success");
+  }else if(ppDelta<0){
+    addActivity(`Pykur perd ${Math.abs(ppDelta)} PP (${oldPP} → ${newPP})`,"warning");
+  }
+
+  checkMilestones(oldPP,newPP);
+  toast(delta>0?`Run ${farmLabel} ajoutée`:`Run ${farmLabel} retirée`,delta>0?"run":"orange",delta>0?"pp":"warning");
+  $("#pykurImg").classList.remove("pop");
+  void $("#pykurImg").offsetWidth;
+  $("#pykurImg").classList.add("pop");
+  save();
+  renderAll();
+}
+
+function formatDuration(sec){
+  sec=Math.max(0,Math.round(sec||0));
+  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  if(h>0)return `${h}h ${String(m).padStart(2,"0")}min`;
+  if(m>0)return `${m}min ${String(s).padStart(2,"0")}s`;
+  return `${s}s`;
+}
+
+
+function notifyPPProgress(oldPP,newPP){
+  const diff=newPP-oldPP;
+  if(diff===0)return;
+
+  const oldPct=Math.min(100,(oldPP/PP_MAX)*100);
+  const newPct=Math.min(100,(newPP/PP_MAX)*100);
+
+  if(diff>0){
+    toast(`Pykur gagne +${diff} PP · ${oldPct.toFixed(1)}% → ${newPct.toFixed(1)}%`,"pp-progress","pp");
+  }else{
+    toast(`Pykur perd ${Math.abs(diff)} PP · ${oldPct.toFixed(1)}% → ${newPct.toFixed(1)}%`,"pp-loss","warning");
+  }
+}
+
+
+function milestoneFlash(){
+  const app=$(".app");
+  if(!app || document.body.classList.contains("no-anim"))return;
+  app.classList.add("milestone-flash");
+  setTimeout(()=>app.classList.remove("milestone-flash"),900);
+}
+
+function checkMilestones(oldPP,newPP){
+  if(!data.stats.milestones)data.stats.milestones={};
+  [25,50,75,100].forEach(p=>{
+    const target=Math.round(PP_MAX*p/100);
+    if(oldPP<target && newPP>=target && !data.stats.milestones[p]){
+      data.stats.milestones[p]=true;
+      toast(`🏆 Pykur a atteint ${p}% de progression !`,"milestone","unlock");
+      milestoneFlash();
+      addActivity(`Palier atteint : ${p}% de progression`,"success");
+    }
+  });
+}
+
+
+
+
+function updatePykurImageByPP(pp){
+  const img=$("#pykurImg");
+  if(!img)return;
+
+  img.classList.toggle("aura-active", pp >= PP_MAX);
+
+  const nextSrc = pp >= PP_MAX ? "./images/aurapykur.png" : "./images/pykur.png";
+  const currentSrc = img.getAttribute("src") || "";
+
+  if(!currentSrc.endsWith(nextSrc.replace("./","")) && currentSrc !== nextSrc){
+    img.src = nextSrc;
+  }
+}
+
+function renderAll(){
+  const pp=currentPP();
+  const pct=Math.min(100,(pp/PP_MAX)*100);
+  $("#progressFill").style.width=pct+"%";
+  $("#progressPercent").textContent=pct.toFixed(2)+" %";
+  $("#prospection").textContent=pp;
+  updatePykurImageByPP(pp);
+  $("#doneMorose").textContent=data.runs.morose;
+  $("#doneTynril").textContent=data.runs.tynril;
+  const remainMorose=simulateRemaining("morose");
+  const remainTynril=simulateRemaining("tynril");
+  $("#remainMorose").textContent=remainMorose;
+  $("#remainTynril").textContent=remainTynril;
+  if($("#timeMorose"))$("#timeMorose").textContent="≈ "+formatDuration(remainMorose*(data.stats.avgMorose||125));
+  if($("#timeTynril"))$("#timeTynril").textContent="≈ "+formatDuration(remainTynril*(data.stats.avgTynril||600));
+  $("#farmSelect").value=data.ui.farm;
+  renderMonsterTable();
+  renderStats();
+  renderActivity();
+  renderChrono();
+  renderChronoHistory();
+  renderRunTimesPanel();
+}
+
+function renderProfiles(){
+  const select=$("#profileSelect");
+  select.innerHTML="";
+  for(const id in store.profiles){
+    const opt=document.createElement("option");
+    opt.value=id;
+    opt.textContent=store.profiles[id].name;
+    select.appendChild(opt);
+  }
+  select.value=activeProfile;
+}
+
+function createProfile(){
+  const name=(prompt("Nom du profil :","Nouveau Pykur")||"").trim();
+  if(!name)return;
+  save();
+  const id="p_"+Date.now();
+  store.profiles[id]={name,data:defaultData()};
+  activeProfile=id;store.active=id;data=clone(store.profiles[id].data);
+  ensureData();save();renderProfiles();renderAll();
+  toast("Profil créé","success");
+}
+
+function renameProfile(){
+  const current=store.profiles[activeProfile].name;
+  const name=(prompt("Nouveau nom :",current)||"").trim();
+  if(!name)return;
+  store.profiles[activeProfile].name=name;
+  save();renderProfiles();toast("Profil renommé","info");
+}
+
+function deleteProfile(){
+  if(Object.keys(store.profiles).length<=1){toast("Impossible de supprimer le dernier profil","error");return}
+  if(!confirm("Supprimer ce profil ?"))return;
+  delete store.profiles[activeProfile];
+  activeProfile=Object.keys(store.profiles)[0];
+  store.active=activeProfile;
+  data=clone(store.profiles[activeProfile].data);
+  ensureData();save();renderProfiles();renderAll();
+}
+
+function switchProfile(id){
+  save();
+  activeProfile=id;
+  data=clone(store.profiles[activeProfile].data);
+  ensureData();
+  applySettings();
+  renderProfiles();
+  renderAll();
+  toast(`Profil changé : ${store.profiles[activeProfile].name}`,"profile","success");
+}
+
+function renderMonsterTable(){
+  const tab=data.ui.tab||"morose";
+  const table=$("#monsterTable");
+  table.innerHTML="";
+  const header=document.createElement("div");
+  header.className="monster-row header "+(tab==="all"?"all":"");
+  if(tab==="all"){
+    header.innerHTML="<span></span><span>Monstre</span><span>Morose</span><span>Tynril</span><span>Zone</span><span>Total</span>";
+  }else{
+    header.innerHTML="<span></span><span>Monstre</span><span>Total</span>";
+  }
+  table.appendChild(header);
+
+  const ids=Object.keys(mobs).filter(id=>{
+    if(tab==="all")return true;
+    if(tab==="zone")return zoneIds.includes(id);
+    return mobs[id].cat.includes(tab);
+  });
+
+  ids.forEach(id=>{
+    const m=mobs[id];
+    const row=document.createElement("div");
+    row.className="monster-row "+(tab==="all"?"all":"");
+    if(tab==="all"){
+      const total=(data.mobs.morose[id]||0)+(data.mobs.tynril[id]||0)+(data.mobs.zone[id]||0);
+      row.innerHTML=`<img class="monster-icon" src="./images/${m.img}" alt=""><span>${m.name}</span><span class="monster-value">${data.mobs.morose[id]||0}</span><span class="monster-value">${data.mobs.tynril[id]||0}</span><span class="monster-value">${data.mobs.zone[id]||0}</span><span class="monster-value">${total}</span>`;
+    }else{
+      row.innerHTML=`<img class="monster-icon" src="./images/${m.img}" alt=""><span>${m.name}</span><span class="monster-value">${data.mobs[tab][id]||0}</span>`;
+    }
+    table.appendChild(row);
+  });
+}
+
+function openModal(id){$("#"+id).classList.add("show")}
+function closeModal(id){$("#"+id).classList.remove("show")}
+
+function renderStats(){
+  const content=$("#statsContent");
+  const days=data.stats?.days||{};
+  syncTodayPPGain();
+  const todayStats=ensureDay();
+  const todayTotal=dayTotal(todayStats);
+
+  const activeDays=sortedActiveDays();
+  const currentStreak=calcCurrentStreak();
+  const bestStreak=calcBestStreak();
+  const avgPerDay=calcAveragePerActiveDay();
+  const bestDay=calcBestDay();
+
+  const totalRuns=(data.runs.morose||0)+(data.runs.tynril||0);
+  const morosePct=totalRuns?Math.round((data.runs.morose/totalRuns)*100):0;
+  const tynrilPct=totalRuns?100-morosePct:0;
+
+  const ppSource=ppContributionBySource();
+  const morosePPPct=percentPart(ppSource.morose,ppSource.total);
+  const tynrilPPPct=percentPart(ppSource.tynril,ppSource.total);
+  const zonePPPct=ppSource.total ? Math.max(0,100-morosePPPct-tynrilPPPct) : 0;
+
+  const totalMonsters=Object.values(totalMobs()).reduce((a,b)=>a+b,0);
+  const marks=data.chrono.marks||[];
+  const moroseMarks=marks.filter(m=>m.farm==="morose");
+  const tynrilMarks=marks.filter(m=>m.farm==="tynril");
+
+  const bestTime=list=>{
+    const valid=list.map(m=>m.time||0).filter(Boolean);
+    if(!valid.length)return "—";
+    return formatChrono(Math.min(...valid));
+  };
+
+  const avgReal=list=>{
+    const valid=list.map(m=>m.time||0).filter(Boolean);
+    if(!valid.length)return "—";
+    const sum=valid.reduce((a,b)=>a+b,0);
+    return formatDuration(Math.round(sum/valid.length));
+  };
+
+  const bestDayText=bestDay
+    ? `${bestDay.total} run${bestDay.total>1?"s":""}`
+    : "—";
+
+  const bestDaySub=bestDay
+    ? `${bestDay.date.split("-").reverse().join("/")} · M ${bestDay.day.morose||0} / T ${bestDay.day.tynril||0}`
+    : "Aucune journée active";
+
+  content.innerHTML=`
+    <section class="stats-fantasy-card wide">
+      <div class="stats-fantasy-head">
+        <h3>📅 Aujourd’hui</h3>
+        <div class="stats-fantasy-badge">${todayTotal} run${todayTotal>1?"s":""}</div>
+      </div>
+      <div class="stats-fantasy-body">
+        <div class="stats-kpi-grid">
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Morose aujourd’hui</div>
+            <div class="stats-kpi-value stats-orange">${todayStats.morose||0}</div>
+            <div class="stats-kpi-sub">runs enregistrées</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Tynril aujourd’hui</div>
+            <div class="stats-kpi-value stats-purple">${todayStats.tynril||0}</div>
+            <div class="stats-kpi-sub">runs enregistrées</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">PP gagnée aujourd’hui</div>
+            <div class="stats-kpi-value stats-green">+${todayStats.pp||0}</div>
+            <div class="stats-kpi-sub">via actions du jour</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-fantasy-card">
+      <div class="stats-fantasy-head">
+        <h3>🔥 Régularité</h3>
+        <div class="stats-fantasy-badge">${activeDays.length} jour${activeDays.length>1?"s":""}</div>
+      </div>
+      <div class="stats-fantasy-body">
+        <div class="stats-lines">
+          <div class="stats-clean-line"><span>Série actuelle</span><strong class="stats-orange">${currentStreak} j</strong></div>
+          <div class="stats-clean-line"><span>Meilleure série</span><strong class="stats-red">${bestStreak} j</strong></div>
+          <div class="stats-clean-line"><span>Moyenne / jour actif</span><strong class="stats-blue">${avgPerDay.toFixed(1)}</strong></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-fantasy-card">
+      <div class="stats-fantasy-head">
+        <h3>🏆 Records</h3>
+        <div class="stats-fantasy-badge">Profil</div>
+      </div>
+      <div class="stats-fantasy-body">
+        <div class="stats-record-box">
+          <div>
+            <div class="stats-record-label">Meilleure journée</div>
+            <div class="stats-record-value stats-green">${bestDayText}</div>
+          </div>
+          <div class="stats-kpi-sub">${bestDaySub}</div>
+        </div>
+        <div class="stats-record-box">
+          <div>
+            <div class="stats-record-label">Monstres totaux tués</div>
+            <div class="stats-record-value stats-orange">${totalMonsters}</div>
+          </div>
+          <div class="stats-kpi-sub">toutes sources</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-fantasy-card wide">
+      <div class="stats-fantasy-head">
+        <h3>⚖️ Contribution PP</h3>
+        <div class="stats-fantasy-badge">${ppSource.total} PP brute${ppSource.total>1?"s":""}</div>
+      </div>
+      <div class="stats-fantasy-body">
+        <div class="stats-kpi-grid">
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Morose</div>
+            <div class="stats-kpi-value stats-orange">${morosePPPct}%</div>
+            <div class="stats-kpi-sub">${ppSource.morose} PP générée${ppSource.morose>1?"s":""}</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Tynril</div>
+            <div class="stats-kpi-value stats-purple">${tynrilPPPct}%</div>
+            <div class="stats-kpi-sub">${ppSource.tynril} PP générée${ppSource.tynril>1?"s":""}</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Zone / manuel</div>
+            <div class="stats-kpi-value stats-green">${zonePPPct}%</div>
+            <div class="stats-kpi-sub">${ppSource.zone} PP générée${ppSource.zone>1?"s":""}</div>
+          </div>
+        </div>
+        <div class="stats-mini-bar pp-contribution-bar">
+          <span class="morose" style="width:${morosePPPct}%"></span>
+          <span class="tynril" style="width:${tynrilPPPct}%"></span>
+          <span class="zone" style="width:${zonePPPct}%"></span>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-fantasy-card wide">
+      <div class="stats-fantasy-head">
+        <h3>⏱ Chrono</h3>
+        <div class="stats-fantasy-badge">${marks.length} run${marks.length>1?"s":""}</div>
+      </div>
+      <div class="stats-fantasy-body">
+        <div class="stats-kpi-grid">
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Meilleur Morose</div>
+            <div class="stats-kpi-value stats-orange">${bestTime(moroseMarks)}</div>
+            <div class="stats-kpi-sub">Moyenne réelle : ${avgReal(moroseMarks)}</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Meilleur Tynril</div>
+            <div class="stats-kpi-value stats-purple">${bestTime(tynrilMarks)}</div>
+            <div class="stats-kpi-sub">Moyenne réelle : ${avgReal(tynrilMarks)}</div>
+          </div>
+          <div class="stats-kpi">
+            <div class="stats-kpi-label">Runs chronométrées</div>
+            <div class="stats-kpi-value stats-blue">${marks.length}</div>
+            <div class="stats-kpi-sub">Morose ${moroseMarks.length} · Tynril ${tynrilMarks.length}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+let activityFilter="all";
+
+function getActivityKind(message,type="info"){
+  const msg=(message||"").toLowerCase();
+
+  if(
+    msg.includes("chrono") ||
+    msg.includes("chronométr") ||
+    msg.includes("temps marqué") ||
+    msg.includes("temps renommé") ||
+    msg.includes("temps supprimé") ||
+    msg.includes("run marquée") ||
+    msg.includes("temps moyen")
+  )return "chrono";
+
+  if(
+    msg.includes("run") ||
+    msg.includes("donjon") ||
+    msg.includes("monstre") ||
+    msg.includes("prospection") ||
+    msg.includes("pykur gagne") ||
+    msg.includes("pykur perd") ||
+    msg.includes("palier")
+  )return "progression";
+
+  return "system";
+}
+
+function getActivityIcon(kind,type){
+  if(type==="error")return "!";
+  if(kind==="progression")return "+";
+  if(kind==="chrono")return "⏱";
+  return "⚙";
+}
+
+function compactActivities(entries){
+  const sorted=[...entries].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const compact=[];
+
+  function parseRunMessage(message){
+    const msg=message||"";
+    const m=msg.match(/^([+-]1) run (Morose|Tynril)$/i);
+    if(!m)return null;
+    return {
+      delta:m[1]==="+1"?1:-1,
+      farm:m[2]
+    };
+  }
+
+  for(const entry of sorted){
+    const d=new Date(entry.date);
+    const minuteKey=isNaN(d)?"":d.toISOString().slice(0,16);
+    const kind=getActivityKind(entry.message,entry.type);
+    const run=parseRunMessage(entry.message);
+    const last=compact[compact.length-1];
+
+    if(
+      last &&
+      run &&
+      last.run &&
+      last.run.farm===run.farm &&
+      last.run.delta===run.delta &&
+      last.minuteKey===minuteKey
+    ){
+      last.count++;
+      last.run.total+=run.delta;
+      const abs=Math.abs(last.run.total);
+      const sign=last.run.total>0?"+":"-";
+      last.message=`${sign}${abs} runs ${run.farm}`;
+      continue;
+    }
+
+    if(last && !run && last.message===entry.message && last.type===entry.type && last.kind===kind && last.minuteKey===minuteKey){
+      last.count++;
+      continue;
+    }
+
+    compact.push({
+      ...entry,
+      kind,
+      minuteKey,
+      count:1,
+      run:run ? {farm:run.farm,delta:run.delta,total:run.delta} : null
+    });
+  }
+
+  return compact;
+}
+
+function formatActivityDay(day){
+  if(day==="unknown")return "Date inconnue";
+  const d=new Date(day+"T00:00:00");
+  const t=new Date(today()+"T00:00:00");
+  const diff=Math.round((t-d)/86400000);
+
+  if(diff===0)return "📅 Aujourd’hui";
+  if(diff===1)return "📅 Hier";
+
+  return "📅 "+d.toLocaleDateString("fr-FR",{weekday:"long",day:"2-digit",month:"long"});
+}
+
+function renderActivity(){
+  const content=$("#activityContent");
+  const summary=$("#activitySummary");
+  const search=($("#activitySearch")?.value||"").trim().toLowerCase();
+
+  if(!content)return;
+
+  let entries=data.activity||[];
+  const todayKey=today();
+  const todayEntries=entries.filter(a=>(a.date||"").startsWith(todayKey));
+
+  if(summary){
+    summary.innerHTML=`
+      <div class="activity-summary-card">
+        <div>
+          <div class="activity-summary-label">Actions aujourd’hui</div>
+          <div class="stats-kpi-sub">Toutes catégories confondues</div>
+        </div>
+        <div class="activity-summary-value stats-blue">${todayEntries.length}</div>
+      </div>
+    `;
+  }
+
+  if(activityFilter!=="all"){
+    entries=entries.filter(a=>getActivityKind(a.message,a.type)===activityFilter);
+  }
+
+  if(search){
+    entries=entries.filter(a=>(a.message||"").toLowerCase().includes(search));
+  }
+
+  const compact=compactActivities(entries);
+
+  if(!compact.length){
+    content.innerHTML='<div class="activity-empty">Aucune action trouvée.</div>';
+    return;
+  }
+
+  const groups={};
+
+  compact.forEach(entry=>{
+    const d=new Date(entry.date);
+    const key=isNaN(d)?"unknown":d.toISOString().split("T")[0];
+    if(!groups[key])groups[key]=[];
+    groups[key].push(entry);
+  });
+
+  content.innerHTML=Object.keys(groups)
+    .sort((a,b)=>b.localeCompare(a))
+    .map(day=>{
+      const rows=groups[day].map(entry=>{
+        const d=new Date(entry.date);
+        const time=isNaN(d)?"--:--":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+        const icon=getActivityIcon(entry.kind,entry.type);
+        const repeat=entry.count>1?`<div class="activity-repeat">×${entry.count}</div>`:"";
+
+        return `
+          <div class="activity-row ${entry.kind} ${entry.type||"info"}">
+            <div class="activity-time">${time}</div>
+            <div class="activity-dot">${icon}</div>
+            <div class="activity-message" title="${entry.message}">${entry.message}</div>
+            ${repeat}
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <section class="activity-day-group">
+          <div class="activity-day-title">
+            <span>${formatActivityDay(day)}</span>
+            <span class="activity-day-count">${groups[day].reduce((s,e)=>s+(e.count||1),0)}</span>
+          </div>
+          <div class="activity-timeline-list">${rows}</div>
+        </section>
+      `;
+    })
+    .join("");
+}
+
+function renderChronoHistory(){
+  const smallTargets={morose:$("#historyMorose"),tynril:$("#historyTynril")};
+
+  for(const k in smallTargets){
+    if(!smallTargets[k])continue;
+    const marks=(data.chrono.marks||[]).filter(m=>m.farm===k).slice(0,8);
+    if(!marks.length){
+      smallTargets[k].innerHTML='<div class="chrono-empty">Aucun temps</div>';
+      continue;
+    }
+    smallTargets[k].innerHTML=marks.map(m=>{
+      const d=new Date(m.date);
+      const time=isNaN(d)?"--:--":d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+      return `<div class="chrono-mark"><span>${formatChrono(m.time)}</span><span>${time}</span></div>`;
+    }).join("");
+  }
+
+  renderRunTimesPanel();
+}
+
+function renderRunTimesPanel(){
+  const targets={morose:$("#runTimesMorose"),tynril:$("#runTimesTynril")};
+  const statTargets={morose:$("#runStatsMorose"),tynril:$("#runStatsTynril")};
+
+  for(const farm in targets){
+    const box=targets[farm];
+    if(!box)continue;
+
+    const marks=(data.chrono.marks||[])
+      .map((mark,index)=>({...mark,index}))
+      .filter(mark=>mark.farm===farm);
+
+    if(statTargets[farm]){
+      statTargets[farm].textContent=marks.length+" run"+(marks.length>1?"s":"");
+    }
+
+    if(!marks.length){
+      box.innerHTML='<div class="run-time-empty">Aucun temps marqué.</div>';
+      continue;
+    }
+
+    box.innerHTML=marks.map(mark=>{
+      const d=new Date(mark.date);
+      const date=isNaN(d)?"--":d.toLocaleDateString("fr-FR",{day:"2-digit",month:"2-digit"})+" "+d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+      const name=mark.name || `Run ${formatChrono(mark.time)}`;
+      return `
+        <div class="run-time-row">
+          <div class="run-time-name" title="${name}">${name}</div>
+          <div class="run-time-time">${formatChrono(mark.time)}</div>
+          <div class="run-time-date">${date}</div>
+          <div style="display:flex;gap:6px;justify-content:flex-end">
+            <button class="btn btn-orange" data-rename-mark="${mark.index}">Renommer</button>
+            <button class="btn btn-red" data-delete-mark="${mark.index}">Suppr.</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+}
+
+function renameMarkedTime(index){
+  const mark=data.chrono.marks[index];
+  if(!mark)return;
+  const oldName=mark.name || `Run ${formatChrono(mark.time)}`;
+  const name=prompt("Nom du temps marqué :",oldName);
+  if(name===null)return;
+  const newName=name.trim() || oldName;
+  mark.name=newName;
+  addActivity(`Temps renommé : ${oldName} → ${newName}`,"info");
+  save();
+  renderRunTimesPanel();
+  renderActivity();
+  toast("Temps renommé","success");
+}
+
+function deleteMarkedTime(index){
+  const mark=data.chrono.marks[index];
+  if(!mark)return;
+  const label=mark.name || `${mark.farm==="morose"?"Morose":"Tynril"} ${formatChrono(mark.time)}`;
+  if(!confirm("Supprimer ce temps marqué ?"))return;
+  data.chrono.marks.splice(index,1);
+  addActivity(`Temps supprimé : ${label}`,"warning");
+  save();
+  renderRunTimesPanel();
+  renderStats();
+  toast("Temps supprimé","warning");
+}
+
+function clearMarkedTimes(){
+  if(!data.chrono.marks.length){toast("Aucun temps à vider","warning");return}
+  if(!confirm("Supprimer tous les temps marqués ?"))return;
+  data.chrono.marks=[];
+  addActivity("Tous les temps marqués ont été supprimés","warning");
+  save();
+  renderRunTimesPanel();
+  renderStats();
+  toast("Temps vidés","warning");
+}
+
+function formatChrono(sec){
+  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+}
+
+function renderChrono(){
+  $("#chronoDisplay").textContent=formatChrono(getChronoSeconds());
+}
+
+
+function getChronoSeconds(){
+  const base=parseInt(data.chrono.seconds,10)||0;
+
+  if(!data.chrono.running || !data.chrono.startedAt){
+    return base;
+  }
+
+  const elapsed=Math.max(0,Math.floor((Date.now()-data.chrono.startedAt)/1000));
+  return base+elapsed;
+}
+
+function syncChronoSeconds(){
+  data.chrono.seconds=getChronoSeconds();
+  data.chrono.startedAt=Date.now();
+}
+
+function startChrono(saveNow=true){
+  if(chronoTimer)return;
+
+  data.chrono.running=true;
+  data.chrono.startedAt=Date.now();
+
+  chronoTimer=setInterval(()=>{
+    renderChrono();
+  },250);
+
+  if(saveNow){
+    addActivity("Chrono lancé","chrono");
+    save();
+    toast("Chrono lancé","chrono","chrono");
+  }
+
+  renderChrono();
+}
+
+function pauseChrono(){
+  if(chronoTimer){
+    clearInterval(chronoTimer);
+    chronoTimer=null;
+  }
+
+  if(data.chrono.running){
+    data.chrono.seconds=getChronoSeconds();
+  }
+
+  data.chrono.running=false;
+  data.chrono.startedAt=null;
+
+  addActivity(`Chrono mis en pause : ${formatChrono(data.chrono.seconds)}`,"chrono");
+  save();
+  renderChrono();
+  toast("Chrono en pause","pause","chrono");
+}
+
+function resetChrono(){
+  if(chronoTimer){
+    clearInterval(chronoTimer);
+    chronoTimer=null;
+  }
+
+  data.chrono.seconds=0;
+  data.chrono.running=false;
+  data.chrono.startedAt=null;
+
+  addActivity("Chrono réinitialisé","warning");
+  renderChrono();
+  save();
+  toast("Chrono remis à zéro","reset","reset");
+}
+
+function markTime(){
+  if(!data.chrono.running || !chronoTimer){
+    toast("Le chrono doit être lancé pour marquer une run.","error","error");
+    return;
+  }
+
+  const markedSeconds=getChronoSeconds();
+
+  if(markedSeconds<=0){
+    toast("Impossible de marquer une run à 00:00:00.","error","error");
+    return;
+  }
+
+  data.chrono.marks.unshift({
+    farm:data.ui.farm,
+    time:markedSeconds,
+    date:new Date().toISOString(),
+    name:`${data.ui.farm==="morose"?"Morose":"Tynril"} ${formatChrono(markedSeconds)}`
+  });
+
+  addActivity(`Temps marqué ${data.ui.farm==="morose"?"Morose":"Tynril"} : ${formatChrono(markedSeconds)}`,"success");
+  save();
+  renderStats();
+  renderActivity();
+  renderChronoHistory();
+  renderRunTimesPanel();
+  toast("Run marquée","mark","mark");
+}
+
+function buildMobEditor(){
+  const c=$("#mobEditList");
+  c.innerHTML="";
+  for(const id in mobs){
+    const row=document.createElement("div");
+    row.className="mob-edit-card";
+    row.innerHTML=`
+      <img src="./images/${mobs[id].img}" alt="">
+      <span>${mobs[id].name}</span>
+      <input type="number" min="0" data-mob="${id}" data-area="morose" value="${data.mobs.morose[id]||0}">
+      <input type="number" min="0" data-mob="${id}" data-area="tynril" value="${data.mobs.tynril[id]||0}">
+      <input type="number" min="0" data-mob="${id}" data-area="zone" value="${data.mobs.zone[id]||0}">
+    `;
+    c.appendChild(row);
+  }
+}
+
+function saveMobEditor(){
+  const oldPP=currentPP();
+  pushUndo();
+  $$("#mobEditList input").forEach(input=>{
+    const area=input.dataset.area,id=input.dataset.mob;
+    data.mobs[area][id]=Math.max(0,parseInt(input.value||"0",10));
+  });
+  resetMilestonesIfNeeded();
+  const newPP=currentPP();
+  const ppDelta=newPP-oldPP;
+  addDailyRun(data.ui.farm||"morose",0,ppDelta);
+  syncTodayPPGain();
+  notifyPPProgress(oldPP,newPP);
+
+  if(ppDelta>0){
+    addActivity(`Pykur gagne +${ppDelta} PP (${oldPP} → ${newPP})`,"success");
+  }else if(ppDelta<0){
+    addActivity(`Pykur perd ${Math.abs(ppDelta)} PP (${oldPP} → ${newPP})`,"warning");
+  }
+
+  checkMilestones(oldPP,newPP);
+  addActivity("Monstres modifiés manuellement","warning");
+  save();renderAll();closeModal("editMobsModal");toast("Monstres sauvegardés","success");
+}
+
+function editRuns(){
+  const farm=data.ui.farm;
+  const label=farm==="morose"?"Morose":"Tynril";
+  const val=prompt(`Nombre de runs ${label} :`,data.runs[farm]);
+  if(val===null)return;
+
+  const oldPP=currentPP();
+  pushUndo();
+
+  const delta=setRunsSynced(farm,val);
+  if(delta===false){
+    data.undo.shift();
+    toast("Aucun changement","info");
+    return;
+  }
+
+  resetMilestonesIfNeeded();
+  const newPP=currentPP();
+  const ppDelta=newPP-oldPP;
+  addDailyRun(farm,delta,ppDelta);
+  syncTodayPPGain();
+
+  if(ppDelta>0){
+    addActivity(`Pykur gagne +${ppDelta} PP (${oldPP} → ${newPP})`,"success");
+  }else if(ppDelta<0){
+    addActivity(`Pykur perd ${Math.abs(ppDelta)} PP (${oldPP} → ${newPP})`,"warning");
+  }
+
+  checkMilestones(oldPP,newPP);
+
+  addActivity(`Runs ${label} modifiés : ${data.runs[farm]} (${delta>0?"+":""}${delta})`,"warning");
+  save();
+  renderAll();
+  toast("Donjon synchronisé","edit");
+}
+
+function undo(){
+  const last=data.undo.shift();
+  if(!last){toast("Rien à annuler","warning");return}
+  data.runs=last.runs;
+  data.mobs=last.mobs;
+  resetMilestonesIfNeeded();
+  addActivity("Dernière action annulée","warning");
+  save();renderAll();toast("Action annulée","undo","undo");
+}
+
+function resetAll(){
+  if(!confirm("Remettre ce profil à zéro ?"))return;
+  const settings=clone(data.settings);
+  data=defaultData();data.settings=settings;
+  ensureData();addActivity("Profil remis à zéro","error");
+  save();applySettings();renderAll();
+}
+
+function setAverageTime(farm){
+  const key=farm==="morose"?"avgMorose":"avgTynril";
+  const label=farm==="morose"?"Morose":"Tynril";
+
+  const msg =
+    `Temps moyen par donjon ${label}\n\n` +
+    `Format attendu : minutes:secondes\n\n` +
+    `Exemple :\n` +
+    `2:30 = 2 minutes 30 secondes`;
+
+  const v=prompt(msg,"");
+
+  if(v===null)return;
+
+  const value=String(v).trim();
+
+  if(!value.includes(":")){
+    toast("Format invalide. Utilise par exemple 2:30","error","error");
+    return;
+  }
+
+  const parts=value.split(":");
+
+  if(parts.length!==2){
+    toast("Format invalide. Utilise par exemple 2:30","error","error");
+    return;
+  }
+
+  const minutes=parseInt(parts[0],10);
+  const seconds=parseInt(parts[1],10);
+
+  if(
+    Number.isNaN(minutes) ||
+    Number.isNaN(seconds) ||
+    minutes < 0 ||
+    seconds < 0 ||
+    seconds > 59
+  ){
+    toast("Temps moyen invalide","error","error");
+    return;
+  }
+
+  data.stats[key]=(minutes*60)+seconds;
+
+  addActivity(
+    `Temps moyen ${label} réglé : ${minutes}min ${String(seconds).padStart(2,"0")}s`,
+    "info"
+  );
+
+  save();
+  renderAll();
+
+  toast("Temps moyen enregistré","success");
+}
+
+function exportSave(){
+  save();
+
+  const payload={
+    version:2,
+    exportedAt:new Date().toISOString(),
+    app:"pykur-tracker",
+    store
+  };
+
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="pykur-sauvegarde.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(()=>URL.revokeObjectURL(url),250);
+
+  toast("Sauvegarde exportée","export","export");
+  addActivity("Sauvegarde exportée","system");
+}
+
+function importSaveFile(file){
+  if(!file)return;
+
+  const reader=new FileReader();
+
+  reader.onload=()=>{
+    try{
+      const imported=JSON.parse(reader.result);
+      const importedStore=imported.store || imported;
+
+      if(!importedStore || !importedStore.profiles || !importedStore.active){
+        throw new Error("Format invalide");
+      }
+
+      store=importedStore;
+
+      if(!store.profiles[store.active]){
+        store.active=Object.keys(store.profiles)[0];
+      }
+
+      activeProfile=store.active;
+      data=clone(store.profiles[activeProfile].data || defaultData());
+
+      ensureData();
+      localStorage.setItem("pykur_clean_v1",JSON.stringify(store));
+
+      applySettings();
+      renderProfiles();
+      renderAll();
+
+      toast("Sauvegarde importée","import","import");
+      addActivity("Sauvegarde importée","system");
+    }catch(err){
+      console.error(err);
+      toast("Sauvegarde invalide","error","error");
+    }finally{
+      const input=$("#importSaveInput");
+      if(input)input.value="";
+    }
+  };
+
+  reader.onerror=()=>{
+    toast("Impossible de lire le fichier","error","error");
+  };
+
+  reader.readAsText(file);
+}
+
+document.addEventListener("click",e=>{
+  const close=e.target.closest("[data-close]");
+  if(close)closeModal(close.dataset.close);
+  if(e.target.classList.contains("modal-bg"))closeModal(e.target.id);
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){$$(".modal-bg.show").forEach(m=>m.classList.remove("show")); if($("#runTimesPanel"))$("#runTimesPanel").classList.remove("show");}
+});
+
+$("#plus").onclick=()=>addRun(1);
+$("#minus").onclick=()=>addRun(-1);
+$("#farmSelect").onchange=e=>{data.ui.farm=e.target.value;save();renderAll()};
+$("#editRuns").onclick=editRuns;
+$("#undoButton").onclick=undo;
+$("#resetButton").onclick=resetAll;
+
+$("#statsButton").onclick=()=>{renderStats();openModal("statsModal")};
+$("#optionsButton").onclick=()=>{applySettings();openModal("optionsModal")};
+$("#activityButton").onclick=()=>{if($("#activitySearch"))$("#activitySearch").value=""; activityFilter="all"; $$("[data-activity-filter]").forEach(b=>b.classList.toggle("active",b.dataset.activityFilter==="all")); renderActivity();openModal("activityModal")};
+if($("#monsterLauncher"))$("#monsterLauncher").onclick=()=>{renderMonsterTable();openModal("monstersModal")};
+if($("#openRunTimes"))$("#openRunTimes").onclick=()=>{renderRunTimesPanel();$("#runTimesPanel").classList.add("show")};
+if($("#closeRunTimes"))$("#closeRunTimes").onclick=()=>$("#runTimesPanel").classList.remove("show");
+if($("#closeRunTimesBottom"))$("#closeRunTimesBottom").onclick=()=>$("#runTimesPanel").classList.remove("show");
+if($("#clearRunTimes"))$("#clearRunTimes").onclick=clearMarkedTimes;
+if($("#runTimesPanel"))$("#runTimesPanel").addEventListener("click",e=>{if(e.target.id==="runTimesPanel")$("#runTimesPanel").classList.remove("show")});
+document.addEventListener("click",e=>{
+  const rename=e.target.closest("[data-rename-mark]");
+  if(rename)renameMarkedTime(parseInt(rename.dataset.renameMark,10));
+  const del=e.target.closest("[data-delete-mark]");
+  if(del)deleteMarkedTime(parseInt(del.dataset.deleteMark,10));
+});
+
+$("#createProfile").onclick=createProfile;
+$("#renameProfile").onclick=renameProfile;
+$("#deleteProfile").onclick=deleteProfile;
+$("#profileSelect").onchange=e=>switchProfile(e.target.value);
+
+$("#toggleNight").onclick=()=>{data.settings.night=!data.settings.night;applySettings();save()};
+$("#toggleAnim").onclick=()=>{data.settings.animations=!data.settings.animations;applySettings();save()};
+$("#toggleTooltips").onclick=()=>{data.settings.tooltips=!data.settings.tooltips;applySettings();save()};
+$("#toggleNotif").onclick=()=>{data.settings.notifications=!data.settings.notifications;applySettings();save()};
+$("#toggleSound").onclick=()=>{data.settings.sound=!data.settings.sound;applySettings();save();playSound("click")};
+if($("#exportSave"))$("#exportSave").onclick=exportSave;
+if($("#importSave"))$("#importSave").onclick=()=>$("#importSaveInput").click();
+if($("#importSaveInput"))$("#importSaveInput").onchange=e=>importSaveFile(e.target.files[0]);
+$("#moroseEstimateBox").onclick=()=>setAverageTime("morose");
+$("#tynrilEstimateBox").onclick=()=>setAverageTime("tynril");
+
+$("#chronoStart").onclick=()=>startChrono();
+$("#chronoPause").onclick=pauseChrono;
+$("#chronoReset").onclick=resetChrono;
+$("#markTime").onclick=markTime;
+
+$("#clearActivity").onclick=()=>{if(confirm("Vider l’historique ?")){data.activity=[];save();renderActivity();toast("Historique vidé","reset","reset")}};
+
+$$(".monster-tabs [data-tab]").forEach(btn=>{
+  btn.onclick=()=>{
+    data.ui.tab=btn.dataset.tab;
+    $$(".monster-tabs [data-tab]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    save();renderMonsterTable();
+  };
+});
+
+$("#editMobs").onclick=()=>{buildMobEditor();openModal("editMobsModal")};
+$("#saveMobs").onclick=saveMobEditor;
+
+document.addEventListener("click",e=>{
+  if(e.target.closest("button,.dungeon-mini.full"))playSound("click");
+});
+
+
+if($("#activitySearch")){
+  $("#activitySearch").addEventListener("input",renderActivity);
+}
+
+$$("[data-activity-filter]").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    activityFilter=btn.dataset.activityFilter;
+    $$("[data-activity-filter]").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    renderActivity();
+  });
+});
+
+
+window.addEventListener("beforeunload",()=>{
+  if(data?.chrono?.running){
+    syncChronoSeconds();
+    save();
+  }
+});
+
+load();
+</script>
+</body>
+</html>
